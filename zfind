@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+
+def die_with_usage(msg=nil)
+  puts <<EOF
+  usage: #{$0} <dirpath> <regex>
+EOF
+  puts "\n---\n#{msg}" if msg
+  exit 1
+end
+
+
+$dirpath = ARGV[0]
+$regxstr = ARGV[1]
+
+unless $regxstr and $dirpath
+  die_with_usage("Invalid Number of Arguments")
+end
+
+puts "* DIRPATH: #{$dirpath}"
+puts "* REGXSTR: #{$regxstr}"
+
+unless Dir.exists?($dirpath)
+  die_with_usage("Directory not found")
+end
+
+
+def showmatch(path)
+  return unless path =~ $rgx
+  puts path
+end
+
+def recurse(dir, visited=nil)
+  return if visited && visited[dir]
+  visited = {} unless visited
+  visited[dir] = true
+  Dir.glob("#{dir}/*").each do |path|
+    recurse(path, visited) if Dir.exists?(path)
+    showmatch(path)
+    if path =~ /\.zip$/
+      zippaths = `unzip -l #{path}`.split("\n")
+      dfound = false
+      zippaths.each do |zp|
+        # puts "analyzing|#{zp}|"
+        if dfound && zp =~ /^\-+/
+          # puts "\tBREAKING"
+          break
+        end
+        if !dfound && zp =~ /^\-+/
+          # puts "\tFOUND. SKIPPING"
+          dfound = true
+          next
+        end
+        unless dfound
+          # puts "\tSKIPPING"
+          next
+        end
+        fname = zp.strip.split(/\s+/)[3]
+        showmatch(fname)
+      end
+      # exit 0
+    end
+  end
+end
+
+$rgx = /#{$regxstr}/i
+recurse($dirpath)

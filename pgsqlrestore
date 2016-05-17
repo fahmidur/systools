@@ -1,0 +1,160 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+require 'ostruct'
+require 'getoptlong'
+
+$usage = <<EOF
+Usage: #{$0} <dump_path.sql> [--dbhost (dbhost|localhost)] [--dbuser (dbuser|postgres)]
+-h, --help:
+  Show help
+-a, --dbhost:
+  Database Host. Defaults to localhost.
+-u, --dbuser
+  Database User. Defaults to 'postgres'.
+-n, --dbname
+  Database Name. Defaults to 'restored_[timestamp]'.
+EOF
+
+$db = OpenStruct.new
+$db.name = "restored_#{Time.now.to_i}"
+$db.host = "localhost"
+$db.user = "postgres"
+
+opts = GetoptLong.new(
+  ['--help',   '-h', GetoptLong::NO_ARGUMENT       ],
+  ['--dbhost', '-a', GetoptLong::REQUIRED_ARGUMENT ],
+  ['--dbuser', '-u', GetoptLong::REQUIRED_ARGUMENT ],
+  ['--dbname', '-n', GetoptLong::REQUIRED_ARGUMENT ]
+)
+
+opts.each do |opt, arg|
+  case opt
+  when '--help'
+    puts $usage
+    exit
+  when '--dbhost'
+    $db.host = arg
+  when '--dbuser'
+    $db.user = arg
+  when '--dbname'
+    $db.name = arg
+  end
+end
+
+
+if ARGV.size == 0
+  puts $usage
+  exit 1
+end
+
+$dump_path = ARGV[0]
+unless File.exists?($dump_path)
+  puts "Dump file not found"
+  exit 1
+end
+
+puts "=== DB_RESTORE ==="
+puts "DB_HOST = #{$db.host}"
+puts "DB_NAME = #{$db.name}"
+puts "DB_USER = #{$db.user}"
+puts "DUMP    = #{$dump_path}"
+
+$command_templates = {
+  :psql_nodb   => "psql -c \"%s\"",
+  :psql_ondb   => "psql -d #{$db.name} -c \"%s\"",
+  :psqlop  => "psql -%s"
+}
+
+def exec_command(name, args)
+  command = $command_templates[name] % args
+  puts "=== EXEC_COMMAND: #{command}"
+  out = `#{command}`
+  puts out
+  exitstatus = $?.exitstatus
+  if exitstatus != 0
+    puts "=== FATAL. EXIT_STATUS = #{$?.exitstatus}"
+    exit 1
+  end
+  puts "=== END EXEC_COMMAND"
+  return exitstatus, out
+end
+
+def exec_sql(sql, ondb=true)
+  puts "=== EXEC_SQL: \n#{sql}"
+  r, out = exec_command(ondb ? :psql_ondb : :psql_nodb, sql.strip)
+  puts "=== END EXEC_SQL"
+  return (r == 0)
+end
+
+def db_exists?
+  puts "=== DB_EXISTS? DB=#{$db.name}"
+  ecode, out = exec_command(:psqlop, 'lqt')
+  dbs = out.split("\n").map {|line| line.split(/\s+\|\s+/)[0].strip }.select{|e| e.length>0; }
+  ret = dbs.member?($db.name)
+  puts "DB_EXISTS? " + (ret ? 'YES' : 'NO')
+  puts "=== END DB_EXISTS"
+  return ret
+end
+
+def sql_force_disconnect
+  puts "=== SQL_FORCE_DISCONNECT. DB=#{$db.name}"
+  sql = <<EOF
+  SELECT
+    pg_terminate_backend(pg_stat_activity.pid)
+  FROM
+    pg_stat_activity
+  WHERE
+    pg_stat_activity.datname = '#{$db.name}' AND pid <> pg_backend_pid()
+EOF
+  exec_sql(sql)
+  puts '=== END SQL_FORCE_DISCONNECT'
+end
+
+def sql_assert_connected
+  puts "=== SQL_ASSERT_CONNECTED"
+  exec_command(:psql_ondb, "select * from NOW()")
+  puts "=== END SQL_ASSERT_CONNECTED"
+end
+
+def sql_create_database
+  puts "=== SQL_CREATE_DATABASE"
+  sql = <<EOF
+    CREATE DATABASE #{$db.name} OWNER #{$db.user}
+EOF
+  exec_sql(sql, false)
+  puts "=== END SQL_CREATE_DATABASE"
+end
+
+def sql_drop_database
+  puts "=== SQL_DROP_DATABASE"
+  sql = <<EOF
+    DROP DATABASE #{$db.name}
+EOF
+  exec_sql(sql, false)
+  puts "=== END SQL_DROP_DATABASE"
+end
+
+#--- Main
+sql_force_disconnect
+if db_exists?
+  sql_drop_database
+end
+
+
+sql_create_database
+sql_assert_connected
+sql_force_disconnect
+
+# if $dump_path =~ /.gz\s*$/
+#   puts "=== UNZIPPING DUMP: #{$dump_path}"
+#   system("gunzip #{$dump_path}")
+# end
+
+puts "=== RESTORING"
+orgx = '[a-zA-Z\\_0-9]\\+'
+subproc = "sed 's/OWNER TO #{orgx}/OWNER TO #{$db.user}/;s/\\(REVOKE\\|GRANT\\) \\+ALL \\+ON \\+SCHEMA \\+public \\+\\(FROM\\|TO\\) \\+#{orgx}/\\1 ALL ON SCHEMA public \\2 #{$db.user}/' #{$dump_path} | psql -d #{$db.name}"
+puts "** subproc = #{subproc}"
+IO.popen(subproc).each_line do |line|
+  puts line
+end
+puts "=== DONE RESTORING"

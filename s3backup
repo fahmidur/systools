@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+require 'pry'
+require 'aws-sdk-v1'
+require 'pathname'
+require 'fileutils'
+
+def die_with_usage(msg=nil)
+	puts "Usage: #{$0} <BUCKET_NAME> [BACKUP_DIR_PATH]"
+	printf "%20s\t%s\n", "BUCKET_NAME", "The name of the S3 Bucket"
+	printf "%20s\t%s\n", "BUCKUP_DIR_PATH", "Path to Backup Directory, defaults to ./backup"
+	puts "\n#{mgs}" if msg
+	exit 1
+end
+
+AWS.config(access_key_id: ENV['S3_ACCESS_KEY'], secret_access_key: ENV['S3_SECRET_ACCESS_KEY'], region: ENV['S3_REGION'])
+s3 = AWS::S3.new
+
+$bucketname = ARGV[0]
+$bdirname = ARGV[1] || "./backup"
+
+die_with_usage unless $bucketname
+die_with_usage unless $bdirname
+
+$bpath = Pathname.new("#{$bdirname}/#{$bucketname}")
+puts "$bpath = #{$bpath}"
+FileUtils.mkdir_p($bpath) unless Dir.exists?($bpath)
+
+bucket = s3.buckets[$bucketname]
+puts "BUCKET=#{bucket}"
+bucket.objects.each do |obj|
+	next if obj.key =~ /\/\s*$/
+	path = Pathname.new(obj.key)
+	print "Backing Up: #{path}"
+	lpath = $bpath + path.dirname
+
+	tpath = lpath + path.basename
+
+	if File.exists?(tpath)
+		etag = obj.etag.gsub('"', '')
+		letag = `md5sum #{tpath}`.split(/\s+/)[0]
+		if letag == etag
+			puts "\tSKIPPED"
+			next
+		end
+	end
+
+
+	# Download from S3 and Write to Local FileSystem
+
+	FileUtils.mkdir_p(lpath) unless Dir.exists?(lpath)
+	File.open(tpath, 'wb') do |f|
+		obj.read do |chunk|
+			f.write(chunk)
+		end
+	end
+	puts
+end
