@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+
+require 'pg'
+require 'colorize'
+
+def die_with_usage
+	puts "Usage: #{$0} [database-name] [port]"
+	exit 1
+end
+
+die_with_usage if ARGV.size != 2
+die_with_usage unless ARGV[1] =~ /^\d+$/
+
+$dbname = ARGV[0]
+$port = ARGV[1].to_i
+
+conn = PG.connect(:dbname => $dbname, :port => $port)
+sql = <<EOF
+SELECT 
+	pg_terminate_backend(pg_stat_activity.pid) 
+FROM 
+	pg_stat_activity 
+WHERE 
+	pg_stat_activity.datname = '#{$dbname}' AND pid <> pg_backend_pid()
+EOF
+puts "Executing:"
+puts sql.green
+
+res = conn.exec(sql);
+total_connections = res.ntuples();
+
+puts "RES STATUS=#{res.result_status}"
+puts "RES TUPLES=#{total_connections}"
+
+puts "\n____CONNECTIONS:\n\n"
+res.each_with_index do |tuple, i|
+	status = tuple["pg_terminate_backend"]
+	puts "\tSTATUS_#{i}=#{status}"
+end
+
+puts "\n"
+
