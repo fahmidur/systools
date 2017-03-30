@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+usage() {
+cat << EOF
+usage: $0 options
+
+This script forcefully disconnects all connections
+on a particular database.
+
+EOF
+}
+
+DB_NAME=
+DB_PORT=5432 # Default
+
+while getopts "hd:p:" OPTION
+do 
+  case $OPTION in
+    h)
+      usage
+      exit 1
+      ;;
+    d)
+      DB_NAME=$OPTARG
+      ;;
+    p)
+      DB_PORT=$OPTARG
+      ;;
+  esac
+done
+
+if [[ -z $DB_NAME ]] || [[ -z $DB_PORT ]]
+then
+  echo "[DEBUG] DB_NAME=$DB_NAME"
+  echo "[DEBUG] DB_PORT=$DB_PORT"
+  usage
+  exit 1
+fi
+
+echo "DB_NAME=$DB_NAME"
+echo "DB_PORT=$DB_PORT"
+
+
