@@ -41,3 +41,9 @@ echo "DB_NAME=$DB_NAME"
 echo "DB_PORT=$DB_PORT"
 
 
+SQL="SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = '$DB_NAME' AND pid <> pg_backend_pid()"
+
+printf "SQL=\"$SQL\"\n"
+
+psql -p $DB_PORT -c "$SQL"
+
