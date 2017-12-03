@@ -7,6 +7,10 @@ usage: $0 options
 This script forcefully disconnects all connections
 on a particular database.
 
+  -h  Display this help
+  -d  Database Name 
+  -p  Postgres Port (defaults to 5432)
+
 EOF
 }
 
