@@ -3,7 +3,7 @@
 usage()
 {
 cat << EOF
-usage: $0 options
+Usage: $(basename $0) options
 
 This script set ownership for all table, sequence and views for a given database
 
