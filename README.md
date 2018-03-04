@@ -1,3 +1,3 @@
 # SysTools
 
-A small collection of system utility scripts. Mostly written in ruby.
+A small collection of random utility scripts.
