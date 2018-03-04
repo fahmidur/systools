@@ -1,0 +1,61 @@
+#!/usr/bin/env perl
+
+use File::Basename;
+#use Data::Dumper;
+
+sub die_with_usage() {
+  my $progname = basename($0);
+  print(<<EOF
+Usage: $progname [port_beg] [port_end]
+  Where port_beg <= port_end
+EOF
+  );
+  exit 1;
+};
+
+my $argc = $#ARGV+1;
+if($argc != 2) {
+  die_with_usage();
+}
+
+my $pbeg = $ARGV[0];
+my $pend = $ARGV[1];
+
+if($pbeg !~ /^\d+$/ || $pend !~ /^\d+$/) {
+  die_with_usage();
+}
+if($pbeg > $pend) {
+  die_with_usage();
+}
+
+open(NETSTAT_PIPE, "netstat -tln |");
+my $row = -1;
+my %data;
+while(<NETSTAT_PIPE>) {
+  chomp;
+  if($_ =~ /^Active Internet.*/) {
+    next;
+  }
+  $row++;
+  if($row == 0) { # header
+    next;
+  }
+  my @arr = split(/\s+/, $_);
+
+  my $proto = @arr[0];
+
+  my $ipport = @arr[3];
+  if($ipport =~ /^(.*)\:(\d+)$/) {
+    my $ip = $1; my $port = $2;
+    $data{$port} ||= {};
+    $data{$port}{$ip} ||= 1;
+  }
+}
+close(NETSTAT_PIPE);
+#print Dumper(\%data);
+
+for(my $i = $pbeg; $i <= $pend; $i++) {
+  if($data{$i}){ next; }
+  print $i;
+  last;
+}
