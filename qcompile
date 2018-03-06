@@ -1,0 +1,80 @@
+#!/usr/bin/env perl
+
+use File::Basename;
+
+sub die_with_usage {
+  my $msg = shift;
+
+  print "Usage: ".basename($0)." [File] [Files...]";
+  if($msg) {
+    print("\n$msg\n");
+  }
+  exit(1);
+}
+
+my $argc = scalar(@ARGV);
+if($argc == 0) {
+  die_with_usage();
+}
+
+my @files = ();
+foreach (@ARGV) {
+  if(-e $_) {
+    push @files, $_;
+  } 
+}
+
+if(scalar(@files) == 0) {
+  die_with_usage("No Files Found");
+}
+
+my $filelist = join ' ', @files;
+
+my $lead = @files[0];
+
+my $out_stem = filestem($lead);
+my $out_exec = $out_stem . ".exe";
+
+if(-e $out_exec) {
+  system("rm $out_exec");
+}
+
+if($lead =~ /\.c$/) {
+  my @libs = ();
+  if(fileshave('#include\s+\<math(\.h)\>')) {
+    push @libs, 'm';
+  }
+  my $linkerstr = join ' ', (map {"-l$_"} @libs);
+  my $comstr = "gcc -o $out_exec $filelist $linkerstr";
+  system($comstr);
+}
+
+elsif($lead =~ /\.(cpp|cxx)$/) {
+  my @libs = ();
+  if(fileshave('#include\s+\<math(\.h)\>')) {
+    push @libs, 'm';
+  }
+  my $linkerstr = join ' ', (map {"-l$_"} @libs);
+  my $comstr = "g++ -o $out_exec $filelist $linkerstr";
+  system($comstr);
+}
+
+#---
+sub filestem { my $str = shift;
+  $str = basename($str);
+  $str =~ s/\.(\w+)$//g;
+  return $str;
+}
+
+sub fileshave { my $rgx = shift;
+  my $ret = 0;
+  foreach my $file (@files) {
+    open(FH, $file);
+    while(<FH>) {
+      if($_ =~ /$rgx/) { $ret = 1; break; }
+    }
+    close(FH);
+    if($ret) { break; }
+  }
+  return $ret;
+}
