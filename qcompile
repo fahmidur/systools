@@ -51,7 +51,7 @@ if($lead =~ /\.c$/) {
 
 elsif($lead =~ /\.(cpp|cxx)$/) {
   my @libs = ();
-  if(fileshave('#include\s+\<math(\.h)\>')) {
+  if(fileshave('#include\s+\<cmath(\.h)\>')) {
     push @libs, 'm';
   }
   my $linkerstr = join ' ', (map {"-l$_"} @libs);
