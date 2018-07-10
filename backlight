@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+FILE = '/sys/class/backlight/intel_backlight/brightness'
+require 'pry'
+
+def die_with_usage
+	puts (<<EOF
+usage: #{File.basename($0)} [get|set] [value]
+EOF
+)
+	exit 1
+end
+
+subcommand = ARGV[0]
+COMS = {
+	:get => lambda{
+		puts IO.read(FILE)
+	},
+	:set => lambda{
+		num = ARGV[1].to_i
+		saferange = (100..500)
+		unless saferange.member?(num)
+			STDERR.puts "Invalid Range. Expecting Range: #{saferange}"
+			exit 1
+		end
+		STDERR.puts "backlight -- setting backlight to #{num}"
+		system("sudo sh -c 'echo #{num} > #{FILE}'")
+	},
+	:help => lambda{
+		die_with_usage
+	}
+}
+unless ARGV.length >= 1
+	die_with_usage
+end
+COMS[subcommand.to_sym].call
