@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+require 'pathname'
+require 'mkmf'
+
+def which(cmd)
+  exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+  ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+    exts.each { |ext|
+      exe = File.join(path, "#{cmd}#{ext}")
+      return exe if File.executable?(exe) && !File.directory?(exe)
+    }
+  end
+  return nil
+end
+
+$cwd = Pathname.new(Dir.pwd)
+$out = []
+
+if ARGV.size > 0
+  ARGV.each do |e|
+    cand = Pathname.new(File.absolute_path(e))
+    next unless File.exist?(cand)
+    $out.push(cand)
+  end
+else
+  $out = [$cwd]
+end
+
+if $out.size == 0
+  exit 1
+end
+
+if which("xsel")
+  IO.popen("xsel -ib", 'w') {|p| p.puts($out.join("\n")) }
+end
+
+puts $out
+exit 0
