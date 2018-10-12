@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+require 'set'
+require 'digest'
+
+fnsigs = Set.new
+while line=gets do
+  puts line
+  if line =~ /undefined reference to `(.+)'/i
+    fnsigs << $1
+  end
+end
+
+puts "-----------------------------"
+puts "--- ALL UNDEFINED REFERENCES (SIZE=#{fnsigs.size}):"
+puts "-----------------------------"
+puts fnsigs.to_a
+puts "-----------------------------"
+puts "--- SIZE = #{fnsigs.size}"
+hash = Digest::SHA256.hexdigest(fnsigs.to_a.sort.inspect)
+puts "--- HASH = #{hash}"
