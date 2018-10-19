@@ -6,7 +6,7 @@ use File::Basename;
 sub die_with_usage() {
   my $progname = basename($0);
   print(<<EOF
-Usage: $progname [port_beg] [port_end]
+Usage: $progname <port_beg> <port_end>
   Where port_beg <= port_end
 EOF
   );
