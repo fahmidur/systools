@@ -16,6 +16,16 @@ Prints the absolute path the file and if possible via xsel add that path to the 
 This started off simple bash script, and was rewritten Ruby for some reason.
 Now supports multiple paths.
 
+## netfirstport
+
+```
+Usage: netfirstport <port_beg> <port_end>
+```
+
+Give me the first unused port in the specified port range.
+
+**Use Case**: You want to run some local server, you prefer some port range, but you're okay with some of those ports being taken. Written in Perl. This parses the output of netstat and gives you the first unused tcp port in the range provided.
+
 ## pgforcedisconnect
 
 ```
@@ -32,6 +42,25 @@ on a particular database.
 
 It supports options like port because someone is bound to be running a postgres server on a non-standard port (maybe they think it makes more secure).
 
+## pgsqlrestore
+
+```
+Usage: #{$0} <dump_path.sql> [--dbhost (dbhost|localhost)] [--dbuser (dbuser|postgres)]
+-h, --help:
+  Show help
+-a, --dbhost:
+  Database Host. Defaults to localhost.
+-u, --dbuser
+  Database User. Defaults to 'postgres'.
+-n, --dbname
+  Database Name. Defaults to 'restored_[timestamp]'.
+
+```
+
+This is really ugly and probably wrong. But it does work in most cases.
+
+**Use Case**: Your friend just handed you a SQL dump from a postgres database, not a binary dump from pg_backup. You need to do some work on this data quickly. You try to restore via psql, but there are active connections that you need to disconnect. Or the sql file contains roles that do not exist causing restoration errors. This ugly script will take care of it.
+
 ## backlight
 
 ```
@@ -40,17 +69,17 @@ Usage: backlight [get|set] [value]
 
 Set or get the backlight value via sysfs. 
 
-**Usage Case**: You just installed minimalistic linux distribution, you do not have X installed, and your screen is too bright or too dark. 
+**Use Case**: You just installed minimalistic linux distribution, you do not have X installed, and your screen is too bright or too dark. 
 Known only to work on my dell XPS. Use at your own discretion.
 
+## cpp\_debug\_undefined\_ref
 
-## netfirstport
-
+Typical usage when used with makefile:
 ```
-Usage: netfirstport <port_beg> <port_end>
+$ make 2>&1 | cpp_debug_undefined_ref
 ```
 
-Give me the first unused port in the specified port range.
+This is a simple script, it greps all the undefined references and sticks them into a Set. At the end you get a summary of all the undefined references.
 
-**Use Case**: You want to run some local server, you prefer some port range, but you're okay with some of those ports being taken. Written in Perl. 
-This parses the output of netstat and gives you the first unused tcp port in the range provided.
+**Use Case**: You're trying to compile some large project and you do not really understand what the dependencies. You can't find the documentation. You run make, you see a giant wall of undefined references. Something is missing, but its hard to see exactly what. You simply pipe the output to this script, and you see that it's mostly openssl functions that are undefined, you link openssl, and now things are working.
+
