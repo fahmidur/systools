@@ -69,7 +69,7 @@ Usage: backlight [get|set] [value]
 
 Set or get the backlight value via sysfs. 
 
-**Use Case**: You just installed minimalistic linux distribution, you do not have X installed, and your screen is too bright or too dark. 
+**Use Case**: You just installed some minimalistic linux distribution, you do not have X installed, and your screen is too bright or too dark. 
 Known only to work on my dell XPS. Use at your own discretion.
 
 ## cpp\_debug\_undefined\_ref
