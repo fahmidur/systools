@@ -5,7 +5,7 @@ require 'pry'
 
 def die_with_usage
 	puts (<<EOF
-usage: #{File.basename($0)} [get|set] [value]
+Usage: #{File.basename($0)} [get|set] [value]
 EOF
 )
 	exit 1
