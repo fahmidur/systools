@@ -35,7 +35,7 @@ It supports options like port because someone is bound to be running a postgres 
 ## backlight
 
 ```
-usage: backlight [get|set] [value]
+Usage: backlight [get|set] [value]
 ```
 
 Set or get the backlight value via sysfs. 
