@@ -44,3 +44,13 @@ Set or get the backlight value via sysfs.
 Known only to work on my dell XPS. Use at your own discretion.
 
 
+## netfirstport
+
+```
+Usage: netfirstport <port_beg> <port_end>
+```
+
+Give me the first unused port in the specified port range.
+
+**Use Case**: You want to run some local server, you prefer some port range, but you're okay with some of those ports being taken. Written in Perl. 
+This parses the output of netstat and gives you the first unused tcp port in the range provided.
