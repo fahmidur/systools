@@ -1,0 +1,182 @@
+#!/usr/bin/env ruby
+
+require 'find'
+require 'optparse'
+require 'pathname'
+
+class Pathname
+  def =~(rgx)
+    return self.to_s =~ rgx
+  end
+  def !~(rgx)
+    return self.to_s !~ rgx
+  end
+  def +(bla)
+    return "#{self.to_s}#{bla.to_s}"
+  end
+  def gsub(rgx, bla)
+    return self.to_s.gsub(rgx, bla)
+  end
+  def grab(rgx)
+    if self.to_s =~ rgx
+      return $1
+    end
+    return nil
+  end
+  def size
+    return self.to_s.size
+  end
+end
+
+class String
+  def +(bla)
+    return "#{self.to_s}#{bla.to_s}"
+  end
+end
+
+options = {}
+
+options[:pruneif] = []
+options[:pruneunless] = []
+
+options[:matchif] = []
+options[:matchunless] = []
+
+options[:omap] = nil #lambda {|f| f.to_s }
+
+# prune
+# match
+
+oparser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} </some/directory> [options]"
+  opts.on("--pruneif CONDITION", "Prune if this condition is true") do |cond|
+    options[:pruneif] << lambda { |f| eval(cond) }
+  end
+  opts.on("--pruneunless CONDITION", "Prune unless this condition is true") do |cond|
+    options[:pruneunless] << lambda { |f| eval(cond) }
+  end
+  opts.on("--prunehidden", "Prune Preset. Prune hidden directories") do |v|
+    options[:pruneif] << lambda {|f| f.basename[0] === '.' }
+  end
+  opts.on("--matchif CONDITION", "Match if this condition is true") do |cond|
+    options[:matchif] << lambda { |f| eval(cond) }
+  end
+  opts.on("--matchext EXT", "Match Preset. Match this extension") do |ext|
+    ext = ext.gsub(/^\./, '')
+    options[:matchif] << lambda {|f| f =~ /\.#{ext}/ }
+  end
+  opts.on("--matchunless CONDITION", "Match file unless this condition is true") do |cond|
+    options[:matchunless] << lambda { |f| eval(cond) }
+  end
+  opts.on("--omap MAPPING", "Output Map") do |mapping|
+    options[:omap] = lambda { |f| eval(mapping) }
+  end
+  opts.on("--omapxrem PATTERN", "Output Map Preset. Grab the first match group") do |rgx|
+    rgx = Regexp.new(rgx)
+    options[:omapxrem] = rgx
+  end
+  opts.on("--osep SEP", "Output seperator") do |sep|
+    options[:osep] = sep
+  end
+  opts.on("--oset", "Output is a Set (all items unique)") do |v|
+    options[:oset] = true
+  end
+  opts.on("--osort [dir]", "Output is sorted") do |dir|
+    options[:osort] = dir
+  end
+  opts.on('--osortbysize', "Sort by Size, Lexographic") do |v|
+    options[:osortbysize] = true
+  end
+  opts.on("--opal", "Output is palindrome") do |v|
+    options[:opal] = true
+  end
+  opts.on("--omapxbef BEF", "Prepend this string to each output element") do |bef|
+    options[:omapxbef] = bef
+  end
+  opts.on("--omapxaft AFT", "Append this string to each output element") do |aft|
+    options[:omapxaft] = aft
+  end
+end
+
+oparser.parse!
+
+def die_with_usage(oparser, error=nil)
+  puts oparser
+  if error
+    puts "\nERROR: #{error}"
+  end
+  exit 1
+end
+
+dir = ARGV[0]
+unless dir && Dir.exist?(dir)
+  die_with_usage(oparser, "Expecting path to search directory as first argument")
+end
+#p options
+
+fout = []
+
+Find.find(dir) do |path|
+  f = Pathname.new(path)
+  if options[:pruneif].any? {|lam| lam.call(f) }
+    Find.prune
+  end
+  unless options[:pruneunless].all? {|lam| lam.call(f) }
+    Find.prune
+  end
+  if options[:matchunless].size > 0 and options[:matchunless].any? {|lam| lam.call(f) }
+    next
+  end
+  if options[:matchif].size === 0 || options[:matchif].any? {|lam| lam.call(f) }
+    fout << f
+  end
+end
+
+# fout is guaranteed to be uniq
+
+if options[:omap]
+  fout = fout.map {|f| options[:omap].call(f) }
+else
+  fout = fout
+end
+fout.compact!
+
+if options[:omapxrem]
+  fout = fout.map {|f| f.grab(options[:omapxrem]) }
+end
+fout.compact!
+
+if options[:omapxbef]
+  fout = fout.map {|f| options[:omapxbef] + f }
+end
+if options[:omapxaft]
+  fout = fout.map {|f| f + options[:omapxaft] }
+end
+
+# at this point, fout is NOT guaranteed to be uniq
+
+if options[:oset]
+  fout = fout.uniq
+end
+
+if options[:osortbysize]
+  fout = fout.sort_by {|e| [e.size, e.to_s] }
+end
+
+if options[:osort]
+  fout = fout.sort
+  if options[:osort] === 'desc' || options[:osort] === 'rev'
+    fout = fout.reverse
+  end
+end
+
+
+if options[:opal]
+  fout = fout + fout.reverse
+end
+
+osep = options[:osep] || "\n"
+print fout.join(osep)
+if osep == "\n"
+  puts
+end
