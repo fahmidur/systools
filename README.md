@@ -1,6 +1,7 @@
 # SysTools
 
-A small collection of random utility scripts. The scripts are written mostly in Ruby. These scripts are mostly quick hacks and should not be considered good code or good practice.
+A small collection of random utility scripts. The scripts are written mostly in Ruby. 
+These scripts are mostly quick hacks and should not be considered good code or good practice.
 
 Below are a description of some of the utilities here.
 
@@ -11,9 +12,14 @@ Usage: spath <path/to/file> <path/to/file> ...
 ```
 Prints the absolute path the file and if possible via xsel add that path to the clipboard.
 
-**Use Case**: You have two xterm windows and you would like to quickly share a path between them. You can run spath with no arguments, and that will print out and put into your clipboard the current path. And now you can paste that into other terminal and do whatever you want with it. You can run spath to a particular file, and then paste over to some other terminal. Paste paths where ever you like, paste paths to your friends. If you're on i3wm, you can go around copy and pasting paths without taking your hands off the keyboard.
+**Use Case**: You have two xterm windows and you would like to quickly share a path between them. 
+You can run spath with no arguments, and that will print out and put into your clipboard the current path. 
+And now you can paste that into other terminal and do whatever you want with it. 
+You can run spath to a particular file, and then paste over to some other terminal. 
+Paste paths where ever you like, paste paths to your friends. 
+If you're on i3wm, you can go around copy and pasting paths without taking your hands off the keyboard.
 
-This started off simple bash script, and was rewritten Ruby for some reason.
+This was a simple bash script, and was rewritten Ruby for some reason.
 Now supports multiple paths.
 
 ## netfirstport
