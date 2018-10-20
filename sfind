@@ -42,10 +42,7 @@ options[:pruneunless] = []
 options[:matchif] = []
 options[:matchunless] = []
 
-options[:omap] = nil #lambda {|f| f.to_s }
-
-# prune
-# match
+options[:omap] = nil 
 
 oparser = OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} </some/directory> [options]"
