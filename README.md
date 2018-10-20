@@ -89,3 +89,32 @@ This is a simple script, it greps all the undefined references and sticks them i
 
 **Use Case**: You're trying to compile some large project and you do not really understand what the dependencies. You can't find the documentation. You run make, you see a giant wall of undefined references. Something is missing, but its hard to see exactly what. You simply pipe the output to this script, and you see that it's mostly openssl functions that are undefined, you link openssl, and now things are working.
 
+## sfind
+
+This started as a build debug tool, but can be used for other things. It's mostly a set of optional evals around Ruby's fantastic 'find' library.
+
+**Use Case**: Suppose that you want to find all the library files within some directory, that directory has some big sudirectories that you do not want to go into, you want grab all the library file names, remove the lib part, and output a single space separated line of linker flags all starting with '-l'. This will let you do that with some level of ease.
+
+```
+Usage: sfind </some/directory> [options]
+        --pruneif CONDITION          Prune if this condition is true
+        --pruneunless CONDITION      Prune unless this condition is true
+        --prunehidden                Prune Preset. Prune hidden directories
+        --matchif CONDITION          Match if this condition is true
+        --matchext EXT               Match Preset. Match this extension
+        --matchunless CONDITION      Match file unless this condition is true
+        --omap MAPPING               Output Map
+        --omapxrem PATTERN           Output Map Preset. Grab the first match group
+        --osep SEP                   Output seperator
+        --oset                       Output is a Set (all items unique)
+        --osort [dir]                Output is sorted
+        --osortbysize                Sort by Size, Lexographic
+        --opal                       Output is palindrome
+        --omapxbef BEF               Prepend this string to each output element
+        --omapxaft AFT               Append this string to each output element
+
+```
+Example of finding almost all of the boost libraries in some directory:
+```
+$ sfind --matchunless 'f=~/python|numpy/' --matchext 'a' --omap 'f.basename' --omapxrem 'lib(\w+)\.a' --omapxbef '-l'
+```
