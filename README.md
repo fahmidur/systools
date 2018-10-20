@@ -118,3 +118,13 @@ Example of finding almost all of the boost libraries in some directory:
 ```
 $ sfind --matchunless 'f=~/python|numpy/' --matchext 'a' --omap 'f.basename' --omapxrem 'lib(\w+)\.a' --omapxbef '-l'
 ```
+
+# qcompile
+
+The q here is meant to indicate quick. Written in a Perl as a script to run for quickly compiling some tiny demo C or C++ code.
+Not meant to compile anything serious. It will look at source files and see if any include math.h, if so, it will link against
+libm. It names the output file after the lead source file. So
+```
+$ qcompile hello.cpp
+```
+Will result in the creation of `hello.exe`.
