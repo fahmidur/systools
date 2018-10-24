@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+ifconfig = `ifconfig |grep -B1 'inet '`.split("\n--\n").inject({}) do |s, e| 
+  f=e.split("\n");s[f[0][/^\w+/]] = f[1][/\d+\.\d+\.\d+\.\d+/];s
+end
+
+cols = [:destination, :gateway, :genmask, :flags, :metric, :ref, :use, :iface];
+route = `route | tail -n +3`.split("\n").inject({}) do |s, e| 
+  e.strip; f=e.split(/\s+/);
+  s[f[0]] = f.each_with_index.inject({}) {|s, (e,i)| s[cols[i]]=e;s}
+  s;
+end
+
+puts ifconfig[route["default"][:iface]]
