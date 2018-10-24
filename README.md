@@ -51,7 +51,7 @@ It supports options like port because someone is bound to be running a postgres 
 ## pgsqlrestore
 
 ```
-Usage: #{$0} <dump_path.sql> [--dbhost (dbhost|localhost)] [--dbuser (dbuser|postgres)]
+Usage: pgsqlrestore <dump_path.sql> [--dbhost (dbhost|localhost)] [--dbuser (dbuser|postgres)]
 -h, --help:
   Show help
 -a, --dbhost:
