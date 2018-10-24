@@ -5,7 +5,7 @@ ifconfig = `ifconfig |grep -B1 'inet '`.split("\n--\n").inject({}) do |s, e|
 end
 
 cols = [:destination, :gateway, :genmask, :flags, :metric, :ref, :use, :iface];
-route = `route`.split("\n")[2..-1].inject({}) do |s, e| 
+route = `route`.split("\n").drop(2).inject({}) do |s, e| 
   e.strip; f=e.split(/\s+/);
   s[f[0]] = f.each_with_index.inject({}) {|s, (e,i)| s[cols[i]]=e;s}
   s;
