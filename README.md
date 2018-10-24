@@ -132,3 +132,9 @@ Will result in the creation of `hello.exe`.
 # ipdefault
 
 Get the ip address of the default interface.
+
+# s3backup
+
+Written in Ruby and depends on gem aws-sdk-v1. This one off script was written a long time ago to backup
+an s3 bucket to some local directory. It skips files that have already been copied, so it should be safe
+to interrupt and resume. 
