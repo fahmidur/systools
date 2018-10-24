@@ -128,3 +128,7 @@ libm. It names the output file after the lead source file. So
 $ qcompile hello.cpp
 ```
 Will result in the creation of `hello.exe`.
+
+# ipdefault
+
+Get the ip address of the default interface.
