@@ -6,11 +6,11 @@ require 'pathname'
 require 'fileutils'
 
 def die_with_usage(msg=nil)
-	puts "Usage: #{$0} <BUCKET_NAME> [BACKUP_DIR_PATH]"
-	printf "%20s\t%s\n", "BUCKET_NAME", "The name of the S3 Bucket"
-	printf "%20s\t%s\n", "BUCKUP_DIR_PATH", "Path to Backup Directory, defaults to ./backup"
-	puts "\n#{mgs}" if msg
-	exit 1
+  puts "Usage: #{$0} <BUCKET_NAME> [BACKUP_DIR_PATH]"
+  printf "%20s\t%s\n", "BUCKET_NAME", "The name of the S3 Bucket"
+  printf "%20s\t%s\n", "BUCKUP_DIR_PATH", "Path to Backup Directory, defaults to ./backup"
+  puts "\n#{mgs}" if msg
+  exit 1
 end
 
 AWS.config(access_key_id: ENV['S3_ACCESS_KEY'], secret_access_key: ENV['S3_SECRET_ACCESS_KEY'], region: ENV['S3_REGION'])
@@ -44,7 +44,6 @@ bucket.objects.each do |obj|
 			next
 		end
 	end
-
 
 	# Download from S3 and Write to Local FileSystem
 
