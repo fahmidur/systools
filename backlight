@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 FILE = '/sys/class/backlight/intel_backlight/brightness'
-require 'pry'
 
 def die_with_usage
 	puts (<<EOF
