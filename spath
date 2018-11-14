@@ -32,7 +32,7 @@ if $out.size == 0
 end
 
 if which("xsel")
-  IO.popen("xsel -ib", 'w') {|p| p.puts($out.join("\n")) }
+  IO.popen("xsel -ib", 'w') {|p| p.print($out.join("\n")) }
 end
 
 puts $out
