@@ -1,0 +1,134 @@
+#!/usr/bin/env ruby
+
+
+def die_with_usage(msg=nil)
+  puts "Usage: #{$0} [--only (SemVer|DateLike)]"
+  puts msg if msg
+  exit 1
+end
+
+
+# Used by many projects like:
+# - RapidJSON
+class ReleaseTag_SemVer
+  attr_reader :ok
+  attr_reader :major
+  attr_reader :minor
+  attr_reader :patch
+
+  def initialize(str)
+    str.strip!
+    @str = str
+    @ok = false
+
+    if str =~ /^v(\d+)\.(\d+)\.(\d+)$/
+      @ok = true
+      @major = $1.to_i
+      @minor = $2.to_i
+      @patch = $3.to_i
+    end
+  end
+
+  def to_s
+    unless @ok
+      return "#{self.class.name}(NOK. str=|#{@str}|)"
+    end
+    return "#{self.class.name}(#{@major}.#{@minor}.#{@patch})"
+  end
+
+  def <=>(x)
+    return [@major, @minor, @patch] <=> [x.major, x.minor, x.patch]
+  end
+
+end
+
+# Used by some projects like:
+# - Rakudo
+class ReleaseTag_DateLike
+  attr_reader :ok
+  attr_reader :year
+  attr_reader :month
+  attr_reader :date
+
+  def initialize(str)
+    str.strip!
+    @str = str
+    @ok = false
+
+    if    str =~ /^(\d{4})\.(\d+)(\.\d+)?$/
+      @ok = true
+      @year = $1.to_i
+      @month = $2.to_i
+
+      date_part = $3
+      if date_part && date_part =~ /\.(\d+)/
+        @date = $1.to_i
+      else
+        @date = 0
+      end
+
+      @date = $3.to_i
+    end
+  end
+
+  def to_s
+    unless @ok
+      return "#{self.class.name}(NOK. str=|#{@str}|)"
+    end
+    return "#{self.class.name}(#{@year}-#{@month}-#{@date})"
+  end
+
+  def <=>(x)
+    return [@year, @month, @date] <=> [x.year, x.month, x.date]
+  end
+
+end
+
+class TagLine
+  attr_reader :ok
+  attr_reader :rt
+  attr_reader :str
+
+  @@ReleaseTagKlasses = [
+    ReleaseTag_SemVer,
+    ReleaseTag_DateLike
+  ]
+
+  def initialize(str)
+    str.chomp!
+    @str = str
+
+    objects = @@ReleaseTagKlasses.map { |klass|
+      klass.new(str)
+    }.compact.select { |obj| obj.ok }
+    
+    if objects.size == 1
+      @ok = true
+      @rt = objects.first
+    end
+
+  end
+
+  def to_s
+    unless @rt
+      return "TagLine(NoMatch): |#{@str}|"
+    end
+    return @rt.to_s
+  end
+
+  def <=>(x)
+    return 0 unless @rt
+    return @rt <=> x.rt
+  end
+
+end
+
+tags = []
+
+while line=gets
+  tagline = TagLine.new(line)
+  next unless tagline.ok
+  tags.push(tagline)
+end
+
+puts tags.sort
