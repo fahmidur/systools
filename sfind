@@ -45,7 +45,7 @@ options[:matchunless] = []
 options[:omap] = nil 
 
 oparser = OptionParser.new do |opts|
-  opts.banner = "Usage: #{$0} </some/directory> [options]"
+  opts.banner = "Usage: #{File.basename($0)} </some/directory> [options]"
   opts.on("--pruneif CONDITION", "Prune if this condition is true") do |cond|
     options[:pruneif] << lambda { |f| eval(cond) }
   end
