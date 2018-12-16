@@ -1,41 +1,28 @@
 #!/usr/bin/env ruby
 
-require 'json'
-
-class DockerApi
-  @@API_VERSION = "1.24"
-  @@USOCK_PATH = "/var/run/docker.sock"
-
-
-  def initialize
-    @containers_arr = []
-    @containers_amap_id = {}
-    @containers_amap_name = {}
-    @containers_mmap_image = {}
-    read_containers!
-  end
-
-  def read_containers!
-    data = JSON.parse(`curl -s --unix-socket /var/run/docker.sock http://v.1.24/containers/json\?all\=1`) rescue nil
-    unless data.kind_of?(Array)
-      STDERR.puts "ERROR: Failed to read containers list"
-      return
-    end
-    @containers_arr = data
-    @containers_arr.map! {|e| e['name'] = get_name(e); e}
-    @containers_amap_id = @containers_arr.inject({}) {|h, e| h[e['Id']] = e; h }
-    @containers_amap_name = @containers_arr.inject({}) {|h, e| n=get_name(e); n ? h[n] = e : nil; h }
-    @containers_mmap_image = @containers_arr.inject(Hash.new{|h,k| h[k] = [] }) {|h, e| h[e['Image']] << e; h }
-    puts JSON.pretty_generate(@containers_arr)
-  end
-
-  private
-
-  def get_name(e)
-    n=e['Names'][0][/\w+/] rescue nil
-  end
-
+def die_with_usage(err=nil)
+  puts "Usage: #{File.basename($0)} <filter|all>"
+  puts "Kill all or certain docker containers"
+  puts "For filter syntax see https://docs.docker.com/engine/reference/commandline/ps/#filtering"
+  puts "\nERR: #{err}" if err
+  exit 1
 end
 
-dapi = DockerApi.new
+mode = ARGV[0]
+ids = nil
+if mode == 'all'
+  ids = `docker ps -aq --no-trunc`.split("\n").map(&:chomp)
+elsif ARGV.size > 0
+  filter = ARGV.join(" ")
+  ids = `docker ps -aq --no-trunc --filter #{filter}`
+else
+  die_with_usage("Expecting Filter or 'all'")
+end
+
+unless ids && ids.size > 0
+  puts "No matching containers to remove"
+  exit 0
+end
+
+`docker rm --force #{ids.join(' ')}`
 
