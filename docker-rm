@@ -25,4 +25,3 @@ unless ids && ids.size > 0
 end
 
 `docker rm --force #{ids.join(' ')}`
-
