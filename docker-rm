@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+def die_with_usage(err=nil)
+  puts "Usage: #{File.basename($0)} <filter|all>"
+  puts "Kill all or certain docker containers"
+  puts "For filter syntax see https://docs.docker.com/engine/reference/commandline/ps/#filtering"
+  puts "\nERR: #{err}" if err
+  exit 1
+end
+
+mode = ARGV[0]
+ids = nil
+if mode == 'all'
+  ids = `docker ps -aq --no-trunc`.split("\n").map(&:chomp)
+elsif ARGV.size > 0
+  filter = ARGV.join(" ")
+  ids = `docker ps -aq --no-trunc --filter #{filter}`
+else
+  die_with_usage("Expecting Filter or 'all'")
+end
+
+unless ids && ids.size > 0
+  puts "No matching containers to remove"
+  exit 0
+end
+
+`docker rm --force #{ids.join(' ')}`

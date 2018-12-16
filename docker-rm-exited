@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-docker ps -aq --no-trunc -f status=exited | xargs docker rm
