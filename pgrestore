@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+usage() {
+cat << EOF
+usage: $0 options
+
+This script forcefully disconnects a postgres db,
+drops the existing table,
+
+  -h  Display this help.
+  -d  Database name.
+  -p  Postgres port. (defaults to 5432).
+  -f  Dump file path.
+  -o  Database owner.
+
+EOF
+}
+
+DB_FILE=
+DB_NAME=
+DB_OWNR=
+DB_PORT=5432 # Default
+
+while getopts "hd:p:o:f:" OPTION
+do 
+  case $OPTION in
+    h)
+      usage
+      exit 1
+      ;;
+    d)
+      DB_NAME=$OPTARG
+      ;;
+    o)
+      DB_OWNR=$OPTARG
+      ;;
+    p)
+      DB_PORT=$OPTARG
+      ;;
+    f)
+      DB_FILE=$OPTARG
+      ;;
+  esac
+done
+
+echo "DB_NAME=$DB_NAME"
+echo "DB_PORT=$DB_PORT"
+echo "DB_OWNR=$DB_OWNR"
+echo "DB_FILE=$DB_FILE"
+
+if [[ -z $DB_NAME ]] || [[ -z $DB_PORT ]] || [[ -z $DB_FILE ]] || [[ -z $DB_OWNR ]]
+then
+  usage
+  exit 1
+fi
+
+xsql() {
+  SQL=$1
+  printf "SQL=\"$SQL\"\n"
+  sudo -u postgres psql -p $DB_PORT -c "$SQL"
+}
+
+# Force disconnect the database.
+xsql "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = '$DB_NAME' AND pid <> pg_backend_pid()"
+
+# Recreate the database
+xsql "drop database $DB_NAME;" 
+xsql "create database $DB_NAME owner $DB_OWNR;"
+
+# Restore
+sudo -u postgres pg_restore -d "$DB_NAME" "$DB_FILE" 
