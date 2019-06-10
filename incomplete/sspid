@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'pp'
+
+pid=ARGV[0]
+
+pstree = {}
+
+def scan_pstree
+
+end
+
+SS_COLS = %w{state recvq sendq laddr paddr tag}
+def scan_ss(pid)
+  items = `ss -tp | grep #{pid}`.split("\n").map do |line|
+    arr = line.split(/\s+/)
+    obj = {}
+    arr.each_with_index do |el, idx|
+      obj[SS_COLS[idx]] = el
+    end
+    obj
+  end
+  return items
+end
+
+pp scan_ss(pid)
+
