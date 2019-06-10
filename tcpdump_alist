@@ -5,7 +5,17 @@ our %ips = ();
 sub display() {
   system("clear");
   foreach my $ip (sort keys %ips) {
-    print "$ip\n";
+    printf("%-20s", $ip);
+    if($ip =~ /192\.168.1\.\d+/) {
+      print " --> INTERNAL";
+    }
+    elsif($ip =~ /224\.0\.0\.\d+/) {
+      print " --> LOCAL SUBNET ONLY";
+    }
+    else {
+      print " --> [~~~ INVESTIGATE ~~~]"
+    }
+    print "\n";
   }
 }
 
