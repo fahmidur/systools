@@ -1,0 +1,80 @@
+#!/usr/bin/env perl
+
+sub lookup_pid {
+  $str = shift;
+  my @lines = grep /$str/, split("\n", `ps aux`);
+  if(length @lines <= 0) {
+    return 0;
+  }
+  my $head = $lines[0];
+  my @fields = split(/\s+/, $head);
+  my $pid  = $fields[1];
+  if($pid == $$) {
+    printf "--- WARNING. found my own pid\n";
+    return 0;
+  }
+  return $pid;
+}
+
+sub get_pid_set {
+  my $pid = shift;
+  my $pstree = `pstree -p $pid`;
+  my %out = ($pid => 1);
+  my $fpid;
+  my @lines = $pstree;
+  for $line (@lines) {
+    while($line =~ /\((\d+)\)/g) {
+      $fpid = $1;
+      if($fpid == $$) { next; }
+      $out{$fpid} = 1;
+    }
+  }
+  return sort(keys(%out));
+}
+
+sub die_with_usage {
+  my $msg = shift;
+  print "Usage: $0 <PID_OR_REGEX>\n";
+  if(msg) {
+    print "\n$msg\n";
+  }
+  exit 1;
+}
+
+my $pid;
+my $inp = shift;
+if($inp =~ /^\d+$/) {
+  $pid = $inp;
+  print "actual pid provided=$pid\n";
+}
+elsif ($inp !~ /^\s*$/) {
+  print "searching pid by name=$inp\n";
+  $pid = lookup_pid($inp);
+}
+else {
+  die_with_usage('invalid arguments');
+}
+printf "pid=$pid\n";
+if(!$pid) { 
+  die_with_usage('PID is required');
+}
+
+my @pid_set = get_pid_set($pid);
+my $pid_args = join(" ", map("-p $_", @pid_set));
+open(my $prog, "strace $pid_args -s 99999 2>&1 |") or die "execute failed";
+#open(my $prog, "strace -p $pid -s 99999 2>&1 |") or die "execute failed";
+while(my $line=<$prog>) {
+  chomp $line;
+  #print $line, "\n";
+  if($line =~ /^strace\:.*/i) {
+    print $line, "\n";
+  }
+  if($line =~ /\bwrite.*\(1, \"(.+)\"/) {
+    # a write is taking place to FD=1 (stdout)
+    my $out = $1; 
+    $out =~ s/\\n/\n/g; # replace escaped newlines
+    print $out;
+  }
+
+}
+close($prog);

@@ -22,9 +22,9 @@ sub display() {
 open(my $prog, "tcpdump -nnl 2>&1 |") or die "execute failed";
 while(my $line=<$prog>) {
   chomp $line;
-  #print "LINE: $line\n";
+  #print "line: $line\n";
   while($line =~ /(\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4})/g) {
-    #print "IP_FOUND=$1\n";
+    #print "ip_found=$1\n";
     $ips{$1} = 1;
   }
   display();
