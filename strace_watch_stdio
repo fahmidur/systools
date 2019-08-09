@@ -1,5 +1,11 @@
 #!/usr/bin/env perl
 
+sub str_unescape {
+  my $out = shift;
+  $out =~ s/\\n/\n/g; # replace escaped newlines
+  return $out;
+}
+
 sub lookup_pid {
   $str = shift;
   my @lines = grep /$str/, split("\n", `ps aux`);
@@ -63,17 +69,42 @@ my @pid_set = get_pid_set($pid);
 my $pid_args = join(" ", map("-p $_", @pid_set));
 open(my $prog, "strace $pid_args -s 99999 2>&1 |") or die "execute failed";
 #open(my $prog, "strace -p $pid -s 99999 2>&1 |") or die "execute failed";
+
+our $std_prev = "";
+our $nlf = 0;
+sub std_prnt {
+  my $std = shift;
+  my $out = shift;
+  if($std ne $std_prev) {
+    if($std_prev) {
+      if(!$nlf) { print "\n"; }
+      print "#---- } $std_prev } ---\n";
+    }
+    print "#---- { $std { ---\n";
+  }
+  $out = str_unescape($out);
+  print $out;
+  $nlf = (substr($out, -1) eq "\n") ? 1 : 0;
+  $std_prev = $std;
+}
+
+my $std;
+my $out; 
 while(my $line=<$prog>) {
   chomp $line;
   #print $line, "\n";
   if($line =~ /^strace\:.*/i) {
     print $line, "\n";
   }
-  if($line =~ /\bwrite.*\(1, \"(.+)\"/) {
+  if( $line =~ /\bread.*\(0, \"(.+)\"/ || $line =~ /<\.\.\. read resumed> \"(.+)\"/ ) {
+    $out = $1;
+    std_prnt('STDIN_', $1);
+  }
+  if($line =~ /\bwrite.*\((1|2), \"(.+)\"/) {
     # a write is taking place to FD=1 (stdout)
-    my $out = $1; 
-    $out =~ s/\\n/\n/g; # replace escaped newlines
-    print $out;
+    $std = $1 == '1' ? 'STDOUT' : 'STDERR';
+    $out = $2; 
+    std_prnt($std, $out);
   }
 
 }
