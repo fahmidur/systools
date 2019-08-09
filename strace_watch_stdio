@@ -8,16 +8,24 @@ sub str_unescape {
 
 sub lookup_pid {
   $str = shift;
-  my @lines = grep /$str/, split("\n", `ps aux`);
+  print "lookup_pid. regex=|$str|\n";
+  my @lines = grep /[^]]$str/, split("\n", `ps aux`);
   if(length @lines <= 0) {
     return 0;
   }
   my $head = $lines[0];
   my @fields = split(/\s+/, $head);
   my $pid  = $fields[1];
-  if($pid == $$) {
+  if($pid eq $$) {
     printf "--- WARNING. found my own pid\n";
     return 0;
+  }
+  if($pid eq getppid()) {
+    printf "--- WARNING. found my own ppid\n";
+    return 0;
+  }
+  if($pid) {
+    printf "lookup_pid. found pid=$pid\n";
   }
   return $pid;
 }
@@ -47,6 +55,7 @@ sub die_with_usage {
   exit 1;
 }
 
+#--- main
 my $pid;
 my $inp = shift;
 if($inp =~ /^\d+$/) {
@@ -54,18 +63,23 @@ if($inp =~ /^\d+$/) {
   print "actual pid provided=$pid\n";
 }
 elsif ($inp !~ /^\s*$/) {
-  print "searching pid by name=$inp\n";
   $pid = lookup_pid($inp);
 }
 else {
   die_with_usage('invalid arguments');
 }
-printf "pid=$pid\n";
-if(!$pid) { 
+
+if(!$pid || $pid <= 0) { 
   die_with_usage('PID is required');
 }
 
 my @pid_set = get_pid_set($pid);
+
+if(scalar @pid_set == 0) {
+  printf "no matching pids found";
+  exit 1;
+}
+
 my $pid_args = join(" ", map("-p $_", @pid_set));
 open(my $prog, "strace $pid_args -s 99999 2>&1 |") or die "execute failed";
 #open(my $prog, "strace -p $pid -s 99999 2>&1 |") or die "execute failed";
