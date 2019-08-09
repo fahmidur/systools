@@ -101,7 +101,6 @@ while(my $line=<$prog>) {
     std_prnt('STDIN_', $1);
   }
   if($line =~ /\bwrite.*\((1|2), \"(.+)\"/) {
-    # a write is taking place to FD=1 (stdout)
     $std = $1 == '1' ? 'STDOUT' : 'STDERR';
     $out = $2; 
     std_prnt($std, $out);
