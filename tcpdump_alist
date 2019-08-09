@@ -12,6 +12,9 @@ sub display() {
     elsif($ip =~ /224\.0\.0\.\d+/) {
       print " --> LOCAL SUBNET ONLY";
     }
+    elsif($ip eq "255.255.255.255") {
+      print " --> BCAST THIS NETWORK";
+    }
     else {
       print " --> [~~~ INVESTIGATE ~~~]"
     }
