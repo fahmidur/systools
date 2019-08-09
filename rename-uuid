@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'securerandom'
+require 'fileutils'
+
+fpath = File::absolute_path(ARGV[0])
+npath = File::dirname(fpath) + '/' + SecureRandom.uuid + File::extname(fpath);
+puts "#{fpath} -> #{npath}"
+FileUtils.mv(fpath, npath)

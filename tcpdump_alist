@@ -1,0 +1,32 @@
+#!/usr/bin/env perl
+
+our %ips = ();
+
+sub display() {
+  system("clear");
+  foreach my $ip (sort keys %ips) {
+    printf("%-20s", $ip);
+    if($ip =~ /192\.168.1\.\d+/) {
+      print " --> INTERNAL";
+    }
+    elsif($ip =~ /224\.0\.0\.\d+/) {
+      print " --> LOCAL SUBNET ONLY";
+    }
+    else {
+      print " --> [~~~ INVESTIGATE ~~~]"
+    }
+    print "\n";
+  }
+}
+
+open(my $prog, "tcpdump -nnl 2>&1 |") or die "execute failed";
+while(my $line=<$prog>) {
+  chomp $line;
+  #print "line: $line\n";
+  while($line =~ /(\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4})/g) {
+    #print "ip_found=$1\n";
+    $ips{$1} = 1;
+  }
+  display();
+}
+close($prog);
