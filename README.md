@@ -138,3 +138,16 @@ Get the ip address of the default interface.
 Written in Ruby and depends on gem aws-sdk-v1. This one off script was written a long time ago to backup
 an s3 bucket to some local directory. It skips files that have already been copied, so it should be safe
 to interrupt and resume. 
+
+# strace_watch_stdio
+
+This is mostly a wrapper around strace that lets you watch
+the STDOUT, STDERR, and STDIN of some target process. It takes a PID or a Regex
+used to find the PID.
+
+**Use Case**: Suppose some script spawned a process which is misbehaving, you
+would quickly like to see what it is doing, and you know already that you are logging
+things to STDOUT. No problem, run this script with the PID or uniquely-identifiable name 
+of the process, and you will hopefully get a sense of what is happening. This is ideal
+for hard to recreate issues where restarting the process with tee or within tmux is not an option
+because you would lose whatever conditions caused the process to misbehave.
