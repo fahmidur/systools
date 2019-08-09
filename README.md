@@ -119,7 +119,7 @@ Example of finding almost all of the boost libraries in some directory:
 $ sfind --matchunless 'f=~/python|numpy/' --matchext 'a' --omap 'f.basename' --omapxrem 'lib(\w+)\.a' --omapxbef '-l'
 ```
 
-# qcompile
+## qcompile
 
 The q here is meant to indicate quick. Written in a Perl as a script to run for quickly compiling some tiny demo C or C++ code.
 Not meant to compile anything serious. It will look at source files and see if any include math.h, if so, it will link against
@@ -129,17 +129,17 @@ $ qcompile hello.cpp
 ```
 Will result in the creation of `hello.exe`.
 
-# ipdefault
+## ipdefault
 
 Get the ip address of the default interface.
 
-# s3backup
+## s3backup
 
 Written in Ruby and depends on gem aws-sdk-v1. This one off script was written a long time ago to backup
 an s3 bucket to some local directory. It skips files that have already been copied, so it should be safe
 to interrupt and resume. 
 
-# strace_watch_stdio
+## strace_watch_stdio
 
 This is mostly a wrapper around strace that lets you watch
 the STDOUT, STDERR, and STDIN of some target process. It takes a PID or a Regex
