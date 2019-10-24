@@ -9,7 +9,11 @@ sub str_unescape {
 sub lookup_pid {
   $str = shift;
   print "lookup_pid. regex=|$str|\n";
-  my @lines = grep /[^]]$str/, split("\n", `ps aux`);
+  my $ownppid = getppid();
+  my @lines = split("\n", `ps aux`); 
+  @lines = grep(/[^]]$str/, @lines);
+  @lines = grep(!/$$/, @lines);
+  @lines = grep(!/$ownppid/, @lines);
   if(length @lines <= 0) {
     return 0;
   }
