@@ -33,6 +33,8 @@ end
 
 if which("xsel")
   IO.popen("xsel -ib", 'w') {|p| p.print($out.join("\n")) }
+elsif which("pbcopy")
+  IO.popen("pbcopy", 'w') {|p| p.print($out.join("\n")) }
 end
 
 puts $out
