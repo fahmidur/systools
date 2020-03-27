@@ -49,5 +49,5 @@ SQL="SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHE
 
 printf "SQL=\"$SQL\"\n"
 
-psql -p $DB_PORT -c "$SQL"
+psql $DB_NAME -p $DB_PORT -c "$SQL"
 
