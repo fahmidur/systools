@@ -19,7 +19,7 @@ You can run spath to a particular file, and then paste over to some other termin
 Paste paths where ever you like, paste paths to your friends. 
 If you're on i3wm, you can go around copy and pasting paths without taking your hands off the keyboard.
 
-This was a simple bash script, and was rewritten Ruby for some reason.
+This was a simple bash script, and was rewritten in Ruby for some reason.
 Now supports multiple paths.
 
 ## netfirstport
@@ -87,7 +87,7 @@ $ make 2>&1 | cpp_debug_undefined_ref
 
 This is a simple script, it greps all the undefined references and sticks them into a Set. At the end you get a summary of all the undefined references.
 
-**Use Case**: You're trying to compile some large project and you do not really understand what the dependencies. You can't find the documentation. You run make, you see a giant wall of undefined references. Something is missing, but its hard to see exactly what. You simply pipe the output to this script, and you see that it's mostly openssl functions that are undefined, you link openssl, and now things are working.
+**Use Case**: You're trying to compile some large project and you do not really understand what the dependencies are. You can't find the documentation. You run make, you see a giant wall of undefined references. Something is missing, but its hard to see exactly what. You simply pipe the output to this script, and you see that it's mostly openssl functions that are undefined, you link openssl, and now things are working.
 
 ## sfind
 
@@ -116,7 +116,7 @@ Usage: sfind </some/directory> [options]
 ```
 Example of finding almost all of the boost libraries in some directory:
 ```
-$ sfind --matchunless 'f=~/python|numpy/' --matchext 'a' --omap 'f.basename' --omapxrem 'lib(\w+)\.a' --omapxbef '-l'
+$ sfind </path/to/boost> --matchunless 'f=~/python|numpy/' --matchext 'a' --omap 'f.basename' --omapxrem 'lib(\w+)\.a' --omapxbef '-l' --osep " "
 ```
 
 ## qcompile
