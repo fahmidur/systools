@@ -1,0 +1,75 @@
+#!/usr/bin/env ruby
+
+def die_with_usage(err=nil)
+  scriptname = File.basename($0)
+  puts "Usage: #{scriptname} [filter]"
+  if err
+    puts "\nERROR: #{err}"
+  end
+  exit 1
+end
+
+def git_checkout(branch)
+  puts "switching to branch:\n#{branch}"
+  system("git checkout #{branch}")
+end
+
+def git_checkout_matching(branches, filter)
+
+  selected_branches = []
+  selected_branches += branches.select {|e| e =~ /#{filter}/ }
+  selected_branches += branches.select {|e| e =~ /#{filter}/i }
+  selected_branches.uniq!
+
+  if selected_branches.size == 1
+    git_checkout(selected_branches.first)
+    exit true
+  end
+
+  sblen = selected_branches.size
+  selected_branches.reverse.each_with_index do |opt, i|
+    printf("%5d: %s\n", sblen-i-1, opt)
+  end
+
+  print "> "
+  input = STDIN.gets
+  unless input
+    puts "--- aborted"
+    exit 0
+  end
+  input.chomp!
+  if false
+  elsif input =~ /^\.(exit|abort)$/i
+    return false
+  elsif input =~ /^\d+$/
+    return git_checkout(selected_branches[input.to_i])
+  else
+    return git_checkout_matching(selected_branches, input)
+  end
+end
+
+#--- main
+
+Signal.trap("INT") do
+  puts "--- aborted(SIGINT)"
+  exit 1
+end
+
+filter = ARGV[0] || ''
+#unless filter && !filter.match(/^\s*$/)
+  #die_with_usage('arg filter is required')
+#end
+
+branches = `git branch --sort=committerdate`.split("\n").map {|e| e.strip.gsub(/^\s*\*\s*/, '') }.reverse
+branches.sort_by do |e|
+  if e =~ /(\d+)\.(\d+)\.(\d+)/
+    r = e.clone
+    r[$~.begin(0)...$~.end(0)] = "#{$1.rjust(9,'0')}.#{$2.rjust(9,'0')}.#{$3.rjust(9,'0')}"
+    #puts "e=#{e}\nr=#{r}"
+    r
+  else
+    e.to_s
+  end
+end
+
+git_checkout_matching(branches, filter)
