@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+sub mimetype {
+  my $fpath = shift;
+  my $out = `file --mime-type '$fpath'`; 
+  chomp $out;
+  my @arr=split(/\s*:\s*/, $out);
+  my $mimetype = $arr[1];
+  return $mimetype;
+}
+
+sub quickopen {
+  my $fpath = shift;
+  print "quickopen. fpath=$fpath\n";
+  my $fmime = mimetype($fpath);
+  print "mimetype=$fmime\n";
+  if($fmime =~ /^text/) {
+    my $editor = $ENV{'EDITOR'} || 'vim';
+    system("$editor '$fpath'");
+  } else {
+    system("xdg-open '$fpath'");
+  }
+}
+
+my $fpath=`fzf`; chomp $fpath;
+
+unless($fpath) {
+  print "fzfo. selection aborted\n";
+  exit 0
+}
+
+quickopen($fpath);
+

@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+def die_with_usage(err=nil, ecode=1)
+  name = File.basename($0)
+  puts "Usage: #{name} <number>"
+  if err
+    puts "ERROR: #{err}"
+  end
+  exit ecode
+end
+
+
+num = ARGV[0]
+unless num
+  die_with_usage("number is required")
+end
+
+num = num.gsub(/[^\d]/, '')
+numstr = num.to_s
+puts numstr.to_s.split('').reverse.each_slice(3).map{|g| g.join.reverse }.reverse.join(',')

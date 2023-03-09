@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+while(line=gets)
+  if line =~ /\"(.+)\"/ || line =~ /\'(.+)\'/
+    puts $1
+  end
+end

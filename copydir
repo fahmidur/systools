@@ -1,0 +1,82 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use File::Spec;
+use File::Basename;
+use File::Find;
+use Cwd 'abs_path';
+
+our $source;
+our $target;
+
+sub die_with_usage {
+  my $err = shift;
+  my $scriptname = basename($0);
+  print "Usage: $scriptname <source> <target>\n";
+  if($err) {
+    print "\nERROR: $err\n";
+  }
+  exit(1);
+}
+
+sub run { my $cmd = shift;
+  print "run. ____ | < $cmd\n";
+  my $out = `$cmd`;
+  printf("run. %04d | > %s\n", $?, $out);
+}
+
+sub source_process {
+  my $spath = $_;
+  print "source_process. spath=$spath\n";
+
+  my $spath_abs = abs_path($spath);
+  print "source_process. spath_abs=$spath_abs\n";
+
+  my $spath_norm = $spath_abs;
+  $spath_norm =~ s/$source//;
+  printf "source_process. spath_norm=$spath_norm\n";
+
+  #my $dpath = $target . $spath_norm;
+  my $dpath = File::Spec->join($target, $spath_norm);
+  $dpath =~ s/\/\//\//g;
+
+  printf "source_process. dpath=$dpath\n";
+
+  if(-d $spath_abs) {
+    run("mkdir -p $dpath");
+  }
+  elsif(-f $spath_abs) {
+    my $dpath_dir = dirname($dpath);
+    unless(-d $dpath_dir) {
+      run("mkdir -p $dpath_dir");
+    }
+    run("cp $spath_abs $dpath");
+  }
+
+  print "---\n";
+}
+
+$source = shift;
+$target = shift;
+
+$source = abs_path($source);
+$target = abs_path($target);
+
+unless($source && $target) {
+  die_with_usage("Expecting source and target");
+}
+
+unless(-d $source) {
+  die_with_usage("Expecting directory at source: $source");
+}
+
+unless(-d $target) {
+  die_with_usage("Expecting directory at target: $target");
+}
+
+print "source = $source\n";
+print "target = $target\n";
+
+find({wanted => \&source_process, follow => 1, no_chdir => 1}, $source);

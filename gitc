@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#if [ ! -d ".git" ]; then
+  #echo "ERROR: not a git repo"
+  #exit 1
+#fi
+
+git status > /dev/null
+if [ $? -ne 0 ]; then
+  echo "gitc. This does not appear to be a git repo"
+  exit 1
+fi
+
+git add .
+msg="$*"
+if [ -z "$msg" ]; then
+  msg="wip"
+fi
+#git status
+echo "msg: $msg"
+git commit -m "$msg"
+echo "---"
+#git --no-pager log -1

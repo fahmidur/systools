@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+# @author Syed Reza
+
+require 'ostruct'
+require 'timeout'
+require 'socket'
+
+def present?(str)
+  str = str.to_s
+  return str.size > 0 && str !~ /^\s*$/
+end
+
+def hostport_open?(host, port)
+  puts "hostport_wait. host=#{host} port=#{port}"
+  Timeout::timeout(1) do 
+    s = TCPSocket.new(host, port)
+    s.close
+    return true
+  end
+rescue
+  return false
+end
+
+in_command = false
+hostports = []
+command = []
+ARGV.each do |e|
+  if e == "--"
+    in_command = 1
+    next
+  end
+  if in_command
+    command << e
+    next
+  end
+  kv=e.split(':').compact
+  next if kv.size == 0
+  next unless present?(kv[0])
+  next unless present?(kv[1])
+  hostports << OpenStruct.new({
+    host: kv[0],
+    port: kv[1],
+    open: false,
+  })
+end
+
+puts "hostport-wait. command: #{command}"
+
+idx = 0
+while( hostports.any?{|e| !e.open } )
+  hp = hostports[idx]
+  idx = (idx+1)%hostports.size
+  next if hp.open
+  puts "hostport-wait. Test HOST=#{hp.host} PORT=#{hp.port} ..."
+  if hostport_open?(hp.host, hp.port)
+    hp.open = true
+    puts "hostport-wait. Test HOST=#{hp.host} PORT=#{hp.port} ... IS OPEN"
+  else
+    puts "hostport-wait. Test HOST=#{hp.host} PORT=#{hp.port} ... IS CLOSED"
+  end
+  sleep(1)
+end
+
+exec(*command) if command.size > 0

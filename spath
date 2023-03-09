@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'pathname'
-require 'mkmf'
 
+#------------------------------------------------------------------------------
 def which(cmd)
   exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
   ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
@@ -13,27 +13,43 @@ def which(cmd)
   end
   return nil
 end
+def find_selector_command
+  return "xsel -ib" if which("xsel")
+  return "pbcopy"   if which("pbcopy")
+  return nil
+end
+def bash_safe?(x)
+  !!(x =~ /^[a-zA-Z0-9,._+:\/\-]+$/)
+end
+def make_paste_safe(x)
+  return x if bash_safe?(x)
+  return "'#{x}'" unless x.include?("'")
+  return "\"#{x}\"" unless x.include?('"')
+  return x
+end
+#------------------------------------------------------------------------------
 
-$cwd = Pathname.new(Dir.pwd)
-$out = []
+path_strings = []
 
 if ARGV.size > 0
   ARGV.each do |e|
-    cand = Pathname.new(File.absolute_path(e))
-    next unless File.exist?(cand)
-    $out.push(cand)
+    path = File.absolute_path(e)
+    next unless File.exist?(path)
+    path_strings.push(make_paste_safe(path))
   end
 else
-  $out = [$cwd]
+  path_strings.push(make_paste_safe(Dir.pwd))
 end
 
-if $out.size == 0
+if path_strings.size == 0
   exit 1
 end
 
-if which("xsel")
-  IO.popen("xsel -ib", 'w') {|p| p.print($out.join("\n")) }
+selector_command = find_selector_command()
+if selector_command
+  IO.popen(selector_command, 'w') {|p| p.print(path_strings.join("\n")) }
 end
 
-puts $out
+puts(path_strings)
+
 exit 0

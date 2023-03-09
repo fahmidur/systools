@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+def die_with_usage(err=nil, ecode=nil)
+  name = File.basename($0)
+  puts "Usage: #{name} <manifest.txt>"
+  ecode = ecode == nil ? (err ? 0 : 1) : ecode
+  exit(ecode)
+end
+
+ipath = ARGV[0]
+die_with_usage unless ipath
+
+unless File.exist?(ipath)
+  die_with_usage("No such file at path #{ipath}")
+end
+
+class FileInfo
+  attr_reader :path
+  attr_reader :size
+  def initialize(path)
+    @path = path
+    @size = File.size(path)
+  end
+  def to_s
+    sprintf("%20d || %s", @size, @path)
+  end
+end
+
+total_size = 0
+filelist = []
+File.open(ipath) do |f|
+  f.each_line do |line|
+    path = line.chomp.strip
+    next if path[0] == '#'
+    next unless File.exist?(path)
+    fileinfo = FileInfo.new(path)
+    filelist << fileinfo
+    total_size += fileinfo.size
+  end
+end
+
+puts filelist.sort_by {|e| e.size }
+puts "---"
+puts "total_size=#{total_size}"
+

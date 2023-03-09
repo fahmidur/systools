@@ -1,0 +1,8 @@
+#!/usr/bin/env perl
+
+while(my $line = <>) {
+  chomp $line;
+  next if($line =~ /^\s*#/);
+  next if($line =~ /^s*$/);
+  print $line, "\n"
+}
