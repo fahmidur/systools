@@ -1,0 +1,105 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'getoptlong'
+
+def die_with_usage(err=nil, ecode=1)
+  name = File.basename($0)
+  puts "Usage: #{name} [-c /path/to/ssh/conf]"
+  puts
+  puts <<~EOF
+    -h, --help
+      
+      Print this help message.
+
+    -c, --config        
+
+      Path to SSH config file.
+      Defaults to $HOME/.ssh/config
+
+    -m, --mode
+      
+      Set the mode.
+      Valid modes are:
+
+        'print' -- Print the config file as JSON.
+        'run'   -- Run a command.
+  EOF
+  if err
+    puts "\n---\nERROR: #{err}"
+  end
+  exit(ecode)
+end
+
+#--- main
+
+icpath = nil
+
+opts = GetoptLong.new(
+  ['--help', '-h', GetoptLong::NO_ARGUMENT],
+  ['--config', '-c', GetoptLong::REQUIRED_ARGUMENT],
+  ['--mode', '-m', GetoptLong::REQUIRED_ARGUMENT],
+)
+
+valid_modes = [:print]
+mode = nil
+
+opts.each do |opt, arg|
+  case opt
+  when '--help'
+    die_with_usage()
+  when '--config'
+    icpath = arg
+  when '--mode'
+    imode = arg.to_sym
+    unless valid_modes.member?(imode)
+      die_with_usage("Invalid mode=#{imode}")
+    end
+    mode = imode
+  else
+    # that's fine
+  end
+end
+
+unless icpath
+  icpath = ENV['HOME'] + '/.ssh/config'
+end
+
+unless File.exist?(icpath)
+  die_with_usage "ERROR: No such file at #{icpath}"
+end
+
+hosts = {}
+inhost = nil
+icfile = File.open(icpath)
+icfile.each_line do |line|
+  if line =~ /^\s*#Tag (\w+)/i && inhost
+    inhost[:_tags] ||= []
+    inhost[:_tags] << $1.strip
+    inhost[:_tags].uniq!
+  end
+  next if line =~ /^#/
+  #puts line
+  if inhost && line =~ /^\s*(\w+) (.+)/
+    inhost[$1.strip] = $2.strip
+  end
+  if line =~ /^Host\s+(.+)$/
+    if inhost
+      hosts[inhost[:Host]] = inhost
+    end
+    inhost = {
+      :Host => $1.strip
+    }
+  end
+end
+
+if inhost
+  hosts[inhost[:Host]] = inhost
+end
+
+if mode == :print
+  puts JSON.pretty_generate(hosts)
+else
+  die_with_usage("No mode selected") if mode
+  die_with_usage()
+end
