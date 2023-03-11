@@ -40,9 +40,11 @@ opts = GetoptLong.new(
   ['--config', '-c', GetoptLong::REQUIRED_ARGUMENT],
   ['--mode', '-m', GetoptLong::REQUIRED_ARGUMENT],
   ['--tag', '-t', GetoptLong::REQUIRED_ARGUMENT],
+  ['--field', '-f', GetoptLong::REQUIRED_ARGUMENT],
 )
 
 filter_tag = nil
+map_field = nil
 valid_modes = [:print]
 mode = :print
 
@@ -60,6 +62,8 @@ opts.each do |opt, arg|
     mode = imode
   when '--tag'
     filter_tag = arg
+  when '--field'
+    map_field = arg
   else
     # that's fine
   end
@@ -83,26 +87,40 @@ icfile.each_line do |line|
     inhost[:_tags].uniq!
   end
   next if line =~ /^#/
+  #puts "line: #{line}"
+  if line =~ /^Host\s+(.+)$/
+    if inhost
+      hosts[inhost['Host']] = inhost
+      inhost = nil
+    end
+    inhost = {
+      'Host' => $1.strip
+    }
+  end
   if inhost && line =~ /^\s*(\w+) (.+)/
     inhost[$1.strip] = $2.strip
   end
-  if line =~ /^Host\s+(.+)$/
-    if inhost
-      hosts[inhost[:Host]] = inhost
-    end
-    inhost = {
-      :Host => $1.strip
-    }
-  end
 end
 if inhost
-  hosts[inhost[:Host]] = inhost
+  hosts[inhost['Host']] = inhost
 end
 
 if filter_tag
   hosts.select! do |k,v|
     v[:_tags]&.member?(filter_tag)
   end
+end
+
+out = nil
+if map_field
+  out = hosts.map do |k, v|
+    x = v[map_field] || v[map_field.to_sym]
+  end
+end
+
+if out && out.is_a?(Array)
+  puts out
+  exit 0
 end
 
 if mode == :print
