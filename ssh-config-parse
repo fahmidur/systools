@@ -39,10 +39,12 @@ opts = GetoptLong.new(
   ['--help', '-h', GetoptLong::NO_ARGUMENT],
   ['--config', '-c', GetoptLong::REQUIRED_ARGUMENT],
   ['--mode', '-m', GetoptLong::REQUIRED_ARGUMENT],
+  ['--tag', '-t', GetoptLong::REQUIRED_ARGUMENT],
 )
 
+filter_tag = nil
 valid_modes = [:print]
-mode = nil
+mode = :print
 
 opts.each do |opt, arg|
   case opt
@@ -56,6 +58,8 @@ opts.each do |opt, arg|
       die_with_usage("Invalid mode=#{imode}")
     end
     mode = imode
+  when '--tag'
+    filter_tag = arg
   else
     # that's fine
   end
@@ -79,7 +83,6 @@ icfile.each_line do |line|
     inhost[:_tags].uniq!
   end
   next if line =~ /^#/
-  #puts line
   if inhost && line =~ /^\s*(\w+) (.+)/
     inhost[$1.strip] = $2.strip
   end
@@ -92,9 +95,14 @@ icfile.each_line do |line|
     }
   end
 end
-
 if inhost
   hosts[inhost[:Host]] = inhost
+end
+
+if filter_tag
+  hosts.select! do |k,v|
+    v[:_tags]&.member?(filter_tag)
+  end
 end
 
 if mode == :print
