@@ -22,8 +22,10 @@ def die_with_usage(err=nil, ecode=1)
       Set the mode.
       Valid modes are:
 
-        'print' -- Print the config file as JSON.
-        'run'   -- Run a command.
+        'praw'  -- Print output raw. 
+        'pjson' -- Print output as JSON.
+        'exec'  -- Exec a command on Hosts.
+
   EOF
   if err
     puts "\n---\nERROR: #{err}"
@@ -45,8 +47,8 @@ opts = GetoptLong.new(
 
 filter_tag = nil
 map_field = nil
-valid_modes = [:print]
-mode = :print
+valid_modes = [:pjson, :praw, :exec]
+mode = nil
 
 opts.each do |opt, arg|
   case opt
@@ -105,27 +107,38 @@ if inhost
   hosts[inhost['Host']] = inhost
 end
 
+#--- FILTER
 if filter_tag
   hosts.select! do |k,v|
     v[:_tags]&.member?(filter_tag)
   end
 end
 
-out = nil
+#--- MAP
+out = hosts
 if map_field
   out = hosts.map do |k, v|
     x = v[map_field] || v[map_field.to_sym]
   end
 end
 
-if out && out.is_a?(Array)
-  puts out
-  exit 0
-end
-
-if mode == :print
-  puts JSON.pretty_generate(hosts)
+if mode == :pjson
+  puts JSON.pretty_generate(out)
+elsif mode == :praw
+  if map_field && out.is_a?(Array)
+    puts out
+  elsif out.is_a?(Hash)
+    i = 0
+    out.each do |nick, data|
+      puts if i > 0
+      data.each do |k, v|
+        next if k[0] == "_"
+        puts "#{k} #{v}"
+      end
+      i += 1
+    end
+  end
 else
-  die_with_usage("No mode selected") if mode
+  die_with_usage("Mode unimplemented. mode=#{mode}") if mode
   die_with_usage()
 end
