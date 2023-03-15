@@ -2,34 +2,43 @@
 
 FILE = '/sys/class/backlight/intel_backlight/brightness'
 
-def die_with_usage
-	puts (<<EOF
-Usage: #{File.basename($0)} [get|set] [value]
-EOF
-)
-	exit 1
+def die_with_usage(err=nil, ecode=0)
+  puts "Usage: #{File.basename($0)} [get|set] [value]"
+  if err
+    puts "ERROR: #{err}"
+  end
+  exit ecode
 end
 
-subcommand = ARGV[0]
 COMS = {
-	:get => lambda{
-		puts IO.read(FILE)
-	},
-	:set => lambda{
-		num = ARGV[1].to_i
-		saferange = (100..500)
-		unless saferange.member?(num)
-			STDERR.puts "Invalid Range. Expecting Range: #{saferange}"
-			exit 1
-		end
-		STDERR.puts "backlight -- setting backlight to #{num}"
-		system("sudo sh -c 'echo #{num} > #{FILE}'")
-	},
-	:help => lambda{
-		die_with_usage
-	}
+  :get => lambda{
+    puts IO.read(FILE)
+  },
+  :set => lambda{
+    num = ARGV[1]
+    unless num
+      die_with_usage("value is required")
+    end
+    num = num.to_i
+    saferange = (100..620)
+    unless saferange.member?(num)
+      STDERR.puts "Invalid Range. Expecting Range: #{saferange}"
+      exit 1
+    end
+    STDERR.puts "backlight -- setting backlight to #{num}"
+    #system("sudo sh -c 'echo #{num} > #{FILE}'")
+  },
+  :help => lambda{
+    die_with_usage
+  }
 }
-unless ARGV.length >= 1
-	die_with_usage
-end
-COMS[subcommand.to_sym].call
+
+#--- main
+
+die_with_usage if ARGV.length == 0
+die_with_usage if ARGV.any? {|e| ['-h', '--help'].member?(e) }
+subcommand = ARGV[0]
+die_with_usage("missing subcommand") unless subcommand
+lam = COMS[subcommand.to_sym]
+die_with_usage("no such subcommand") unless lam
+lam.call
