@@ -65,7 +65,11 @@ Usage: pgsqlrestore <dump_path.sql> [--dbhost (dbhost|localhost)] [--dbuser (dbu
 
 This is really ugly and probably wrong. But it does work in most cases.
 
-**Use Case**: Your friend just handed you a SQL dump from a postgres database, not a binary dump from pg_backup. You need to do some work on this data quickly. You try to restore via psql, but there are active connections that you need to disconnect. Or the sql file contains roles that do not exist causing restoration errors. This ugly script will take care of it.
+**Use Case**: Your friend just handed you a SQL dump from a postgres database, not a binary dump from `pg_backup`. 
+You need to do some work on this data quickly. 
+You try to restore via psql, but there are active connections that you need to disconnect. 
+Another issue is that the sql file contains roles that do not exist causing restoration errors. 
+This ugly script will take care of it.
 
 ## backlight
 
@@ -121,9 +125,10 @@ $ sfind </path/to/boost> --matchunless 'f=~/python|numpy/' --matchext 'a' --omap
 
 ## qcompile
 
-The q here is meant to indicate quick. Written in a Perl as a script to run for quickly compiling some tiny demo C or C++ code.
-Not meant to compile anything serious. It will look at source files and see if any include math.h, if so, it will link against
-libm. It names the output file after the lead source file. So
+The q here is meant to indicate quick. Written in Perl as a script to run for quickly compiling some tiny demo C or C++ code.
+Not meant to compile anything serious. It will look at source files and see if any include `math.h`, if so, it will link against
+libm. It names the output file after the lead source file.
+
 ```
 $ qcompile hello.cpp
 ```
@@ -142,8 +147,8 @@ to interrupt and resume.
 ## strace_watch_stdio
 
 This is mostly a wrapper around strace that lets you watch
-the STDOUT, STDERR, and STDIN of some target process. It takes a PID or a Regex
-used to find the PID.
+the STDOUT, STDERR, and STDIN of some target process. 
+It takes a PID or a Regex used to find the PID.
 
 **Use Case**: Suppose some script spawned a process which is misbehaving, you
 would quickly like to see what it is doing, and you know already that you are logging
