@@ -19,12 +19,36 @@ def die_with_usage(err=nil, ecode=1)
 
     -m, --mode
       
-      Set the mode.
+      Set the mode. Defaults to 'praw'.
       Valid modes are:
 
         'praw'  -- Print output raw. 
         'pjson' -- Print output as JSON.
-        'exec'  -- Exec a command on Hosts.
+      
+      A mode is required. 
+
+    -t, --tag
+      
+      ssh-config-parse allows extending the normal config file
+      with tags with a '#Tag' field. 
+
+      Example:
+      ```
+      Host server_nickname
+      HostName server_real_hostname
+      #Tag <whatever-tag-you-like>
+      ```
+
+      You can filter the output with these tag names
+      using this -t, --tag flag. 
+
+    -f, --field
+      
+      Output only the selected field. 
+      In mode=praw,  
+        it will output one line per field. 
+      In mode=pjson, 
+        it will output the fields as a JSON array. 
 
   EOF
   if err
@@ -47,8 +71,8 @@ opts = GetoptLong.new(
 
 filter_tag = nil
 map_field = nil
-valid_modes = [:pjson, :praw, :exec]
-mode = nil
+valid_modes = [:pjson, :praw]
+mode = :praw
 
 opts.each do |opt, arg|
   case opt
@@ -134,6 +158,11 @@ elsif mode == :praw
       data.each do |k, v|
         next if k[0] == "_"
         puts "#{k} #{v}"
+      end
+      if data[:_tags]
+        data[:_tags].each do |tag|
+          puts "#Tag #{tag}"
+        end
       end
       i += 1
     end
