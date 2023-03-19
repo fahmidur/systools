@@ -95,9 +95,16 @@ This is a simple script, it greps all the undefined references and sticks them i
 
 ## sfind
 
-This started as a build debug tool, but can be used for other things. It's mostly a set of optional evals around Ruby's fantastic 'find' library.
+This started as a build debug tool, but can be used for other things. 
+It's mostly a set of optional evals around Ruby's fantastic 'find' library.
 
-**Use Case**: Suppose that you want to find all the library files within some directory, that directory has some big sudirectories that you do not want to go into, you want grab all the library file names, remove the lib part, and output a single space separated line of linker flags all starting with '-l'. This will let you do that with some level of ease.
+**Use Case**: 
+Suppose that you want to find all the library files within some directory, 
+that directory has some big sudirectories that you do not want to go into, 
+you want to grab all the library file names, 
+remove the lib part, 
+and output a single space separated line of linker flags all starting with '-l'. 
+This script will let you do that with some level of ease.
 
 ```
 Usage: sfind </some/directory> [options]
