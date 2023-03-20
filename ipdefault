@@ -1,5 +1,46 @@
 #!/usr/bin/env ruby
 
+def which(cmd)
+  `which #{cmd}`.strip
+end
+
+def die_with_usage(err=nil, ecode=nil)
+  name = File.basename($0)
+  puts <<~EOS
+    Usage: #{name}
+
+    Print local ip address.
+
+    -h, --help
+      
+      Print this help message.
+
+  EOS
+  if err
+    puts "---\nERROR: #{err}"
+    ecode ||= 1
+  else
+    ecode ||= 0
+  end
+  exit ecode
+end
+
+#--- main
+
+if ['-h', '--help'].member?(ARGV[0])
+  die_with_usage()
+end
+
+unless which('ifconfig').size > 0
+  puts "ERROR: this command requires 'ifconfig'"
+  exit 1
+end
+
+unless which('route').size > 0
+  puts "ERROR: this command requires 'route'"
+  exit 1
+end
+
 ifconfig = `ifconfig |grep -B1 'inet '`.split("\n--\n").inject({}) do |s, e| 
   f=e.split("\n");s[f[0][/^\w+/]] = f[1][/\d+\.\d+\.\d+\.\d+/];s
 end
