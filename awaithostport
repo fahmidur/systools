@@ -31,6 +31,10 @@ def die_with_usage(err=nil, ecode=0)
     This script will busywait until all <host>:<port> sockets
     are reachable before executing the <command>. 
 
+    -h, --help
+
+      Print this help string.
+
   EOS
   if err
     puts "ERROR: #{err}"
