@@ -1,9 +1,31 @@
 #!/usr/bin/env ruby
 
-FILE = '/sys/class/backlight/intel_backlight/brightness'
+$brightness_path = nil
+
+def get_backlight_path
+  candidates = Dir.glob('/sys/class/backlight/*')
+  if candidates.size > 1
+    puts "WARNING: more than one backlight brightness candidate"
+  end
+  return candidates.first
+end
+
+def get_brightness_path
+  backlight_path = get_backlight_path()
+  return nil unless backlight_path
+  brightness_path = File.join(backlight_path, 'brightness')
+end
+
 
 def die_with_usage(err=nil, ecode=0)
-  puts "Usage: #{File.basename($0)} [get|set] [value]"
+  puts <<~EOS
+    Usage: #{File.basename($0)} <get|set [value]>
+
+    -h, --help
+      
+      Print this help message.
+
+  EOS
   if err
     puts "ERROR: #{err}"
   end
@@ -12,7 +34,7 @@ end
 
 COMS = {
   :get => lambda{
-    puts IO.read(FILE)
+    puts IO.read($brightness_path)
   },
   :set => lambda{
     num = ARGV[1]
@@ -26,14 +48,20 @@ COMS = {
       exit 1
     end
     STDERR.puts "backlight -- setting backlight to #{num}"
-    #system("sudo sh -c 'echo #{num} > #{FILE}'")
+    system("sudo sh -c 'echo #{num} > #{$brightness_path}'")
   },
   :help => lambda{
-    die_with_usage
+    die_with_usage()
   }
 }
 
 #--- main
+
+$brightness_path = get_brightness_path()
+unless File.exist?($brightness_path)
+  puts "ERROR: Expecting file at #{$brightness_path}"
+  exit 1
+end
 
 die_with_usage if ARGV.length == 0
 die_with_usage if ARGV.any? {|e| ['-h', '--help'].member?(e) }
