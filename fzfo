@@ -2,6 +2,40 @@
 
 use strict;
 use warnings;
+use File::Basename;
+
+sub which {
+  my $cmd = shift;
+  my $ret = `which $cmd`;
+  chomp($ret);
+  return $ret;
+}
+
+sub die_with_usage {
+  my $name = basename($0);
+  my $err = shift;
+  print <<EOF
+Usage: $name
+
+Use fzf to search the current directory and then
+If it is a text file, open it with your \$EDITOR,
+else, open it.
+
+-h, --help
+  
+  Print this help message. 
+
+EOF
+  ;
+
+  if($err) {
+    print("\nERROR: $err\n");
+    exit(1);
+  } 
+  else {
+    exit(0);
+  }
+}
 
 sub mimetype {
   my $fpath = shift;
@@ -20,9 +54,31 @@ sub quickopen {
   if($fmime =~ /^text/) {
     my $editor = $ENV{'EDITOR'} || 'vim';
     system("$editor '$fpath'");
-  } else {
+  } 
+  elsif(which("open")) {
+    # Ubuntu >= 22, OS-X, and others
+    print "Opening with: open\n";
+    system("open $fpath");
+  }
+  elsif(which("xdg-open")) {
+    print "Opening with: xdg-open\n";
     system("xdg-open '$fpath'");
   }
+  else {
+    print "ERROR: No opening utility found\n";
+    exit 1
+  }
+}
+
+#--- main
+
+my $arg0 = $ARGV[0] || '';
+if($arg0 eq '-h' || $arg0 eq '--help') {
+  die_with_usage();
+}
+
+unless(which('fzf')) {
+  die_with_usage('This script requires fzf');
 }
 
 my $fpath=`fzf`; chomp $fpath;
