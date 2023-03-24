@@ -50,6 +50,11 @@ def die_with_usage(err=nil, ecode=1)
       In mode=pjson, 
         it will output the fields as a JSON array. 
 
+    -j, --json
+      
+      Shorthand for mode=pjson, will 
+      output in JSON whenever possible.
+
   EOF
   if err
     puts "\n---\nERROR: #{err}"
@@ -67,6 +72,7 @@ opts = GetoptLong.new(
   ['--mode', '-m', GetoptLong::REQUIRED_ARGUMENT],
   ['--tag', '-t', GetoptLong::REQUIRED_ARGUMENT],
   ['--field', '-f', GetoptLong::REQUIRED_ARGUMENT],
+  ['--json', '-j', GetoptLong::NO_ARGUMENT],
 )
 
 filter_tag = nil
@@ -90,6 +96,8 @@ opts.each do |opt, arg|
     filter_tag = arg
   when '--field'
     map_field = arg
+  when '--json'
+    mode = :pjson
   else
     # that's fine
   end
