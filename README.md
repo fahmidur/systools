@@ -3,7 +3,7 @@
 A small collection of random utility scripts. The scripts are written mostly in Ruby. 
 These scripts are mostly quick hacks and should not be considered good code or good practice.
 
-Below are a description of some of the utilities here.
+Below are descriptions of some of the utilities here.
 
 ## spath
 
@@ -151,7 +151,7 @@ Written in Ruby and depends on gem aws-sdk-v1. This one off script was written a
 an s3 bucket to some local directory. It skips files that have already been copied, so it should be safe
 to interrupt and resume. 
 
-## strace_watch_stdio
+## strace\_watch\_stdio
 
 This is mostly a wrapper around strace that lets you watch
 the STDOUT, STDERR, and STDIN of some target process. 
