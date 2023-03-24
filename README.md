@@ -172,3 +172,18 @@ Example, you want to wait for redis on port 6379 to be up on localhost before sa
 awaithostport localhost:6379 -- echo hello
 ```
 
+```
+Usage: awaithostport [<host>:<port>] -- <command>
+
+You may have more than one <host>:<port> before the <command>.
+
+This script will busywait until all <host>:<port> sockets
+are reachable before executing the <command>. 
+
+-h, --help
+
+  Print this help string.
+
+
+```
+
