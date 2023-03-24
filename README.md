@@ -163,3 +163,12 @@ things to STDOUT. No problem, run this script with the PID or uniquely-identifia
 of the process, and you will hopefully get a sense of what is happening. This is ideal
 for hard to recreate issues where restarting the process with tee or within tmux is not an option
 because you would lose whatever conditions caused the process to misbehave.
+
+## awaithostport
+
+**Use Case**: Suppose you have set of services running in docker-compose or something similar, you want to make sure your database is service is up and reachable before your application. You can use this script to ensure that one or more host-ports are open before running some command.
+Example, you want to wait for redis on port 6379 to be up on localhost before saying hello:
+```
+awaithostport localhost:6379 -- echo hello
+```
+
