@@ -15,9 +15,17 @@ Below are descriptions of some of the utilities here.
 ## spath
 
 ```
-Usage: spath <path/to/file> <path/to/file> ...
+Usage: spath [path]
+
+Copies the absolute path to the target directory 
+to the system clipboard. 
+If path is not given, it defaults to current directory.
+
+
 ```
-Prints the absolute path the file and if possible via xsel add that path to the clipboard.
+
+Prints the absolute path the file AND if possible copies the path to the
+system clipboard using a series of fallbacks. 
 
 **Use Case**: You have two xterm windows and you would like to quickly share a path between them. 
 You can run spath with no arguments, and that will print out and put into your clipboard the current path. 
@@ -33,6 +41,8 @@ Now supports multiple paths.
 
 ```
 Usage: netfirstport <port_beg> <port_end>
+  Where port_beg <= port_end
+
 ```
 
 Give me the first unused port in the specified port range.
@@ -42,23 +52,30 @@ Give me the first unused port in the specified port range.
 ## pgforcedisconnect
 
 ```
-Usage: pgforcedisconnect
+Usage: ./pgforcedisconnect -d <database> [-p <port>]
+
 This script forcefully disconnects all connections
 on a particular database.
 
-  -h  Display this help
-  -d  Database Name 
-  -p  Postgres Port (defaults to 5432)
+  -h, --help
+    Display this help.
+  -d  
+    The name of the database.
+  -p  
+    The Postgres server port.
+    Defaults to 5432.
+
+
 ```
 
 **Use Case**: You're trying to do something to a postgres database and it's complaining that there are connections and therefore it won't do what you want it to do. You know that the connections you have are all managed, they'll reconnect as needed. Use this to disconnect all the active connections to some postgres database.
 
-It supports options like port because someone is bound to be running a postgres server on a non-standard port (maybe they think it makes more secure).
+It supports options like port because someone is bound to be running a postgres server on a non-standard port.
 
 ## pgsqlrestore
 
 ```
-Usage: pgsqlrestore <dump_path.sql> [--dbhost (dbhost|localhost)] [--dbuser (dbuser|postgres)]
+Usage: ./pgsqlrestore <dump_path.sql> [--dbhost (dbhost|localhost)] [--dbuser (dbuser|postgres)]
 -h, --help:
   Show help
 -a, --dbhost:
@@ -81,7 +98,13 @@ This ugly script will take care of it.
 ## backlight
 
 ```
-Usage: backlight [get|set] [value]
+Usage: backlight <get|set [value]>
+
+-h, --help
+  
+  Print this help message.
+
+
 ```
 
 Set or get the backlight value via sysfs. 
@@ -102,17 +125,6 @@ This is a simple script, it greps all the undefined references and sticks them i
 
 ## sfind
 
-This started as a build debug tool, but can be used for other things. 
-It's mostly a set of optional evals around Ruby's fantastic 'find' library.
-
-**Use Case**: 
-Suppose that you want to find all the library files within some directory, 
-that directory has some big sudirectories that you do not want to go into, 
-you want to grab all the library file names, 
-remove the lib part, 
-and output a single space separated line of linker flags all starting with '-l'. 
-This script will let you do that with some level of ease.
-
 ```
 Usage: sfind </some/directory> [options]
         --pruneif CONDITION          Prune if this condition is true
@@ -132,6 +144,18 @@ Usage: sfind </some/directory> [options]
         --omapxaft AFT               Append this string to each output element
 
 ```
+
+This started as a build debug tool, but can be used for other things. 
+It's mostly a set of optional evals around Ruby's fantastic 'find' library.
+
+**Use Case**: 
+Suppose that you want to find all the library files within some directory, 
+that directory has some big sudirectories that you do not want to go into, 
+you want to grab all the library file names, 
+remove the lib part, 
+and output a single space separated line of linker flags all starting with '-l'. 
+This script will let you do that with some level of ease.
+
 Example of finding almost all of the boost libraries in some directory:
 ```
 $ sfind </path/to/boost> --matchunless 'f=~/python|numpy/' --matchext 'a' --omap 'f.basename' --omapxrem 'lib(\w+)\.a' --omapxbef '-l' --osep " "
@@ -173,12 +197,6 @@ because you would lose whatever conditions caused the process to misbehave.
 
 ## awaithostport
 
-**Use Case**: Suppose you have set of services running in docker-compose or something similar, you want to make sure your database is service is up and reachable before your application. You can use this script to ensure that one or more host-ports are open before running some command.
-Example, you want to wait for redis on port 6379 to be up on localhost before saying hello:
-```
-awaithostport localhost:6379 -- echo hello
-```
-
 ```
 Usage: awaithostport [<host>:<port>] -- <command>
 
@@ -192,5 +210,12 @@ are reachable before executing the <command>.
   Print this help string.
 
 
+```
+
+**Use Case**: Suppose you have set of services running in docker-compose or something similar, you want to make sure your database is service is up and reachable before your application. You can use this script to ensure that one or more host-ports are open before running some command.
+
+Example: you want to wait for Redis on port 6379 to be up on localhost before saying hello:
+```
+awaithostport localhost:6379 -- echo hello
 ```
 

@@ -29,6 +29,18 @@ def make_paste_safe(x)
 end
 #------------------------------------------------------------------------------
 
+if ['-h', '--help'].member?(ARGV[0])
+  name = File.basename($0)
+  puts <<~EOF
+    Usage: #{name} [path]
+
+    Copies the absolute path to the target directory 
+    to the system clipboard. 
+    If path is not given, it defaults to current directory.
+
+  EOF
+end
+
 path_strings = []
 
 if ARGV.size > 0
