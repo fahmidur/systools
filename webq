@@ -21,7 +21,9 @@ end
 
 puts lines
 
-if lines.size == 1
-  `open 'http://duckduckgo.com/?q=#{Shellwords.escape(lines[0])}'`
-end
+sline = lines.join(' ')
+sline.gsub!("\n", ' ')
+sline.gsub!(/\s+/, ' ')
+
+system("open 'http://duckduckgo.com/?q=#{Shellwords.escape(sline)}'")
 
