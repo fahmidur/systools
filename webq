@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'shellwords'
+
+def die_with_usage(err=nil, ecode=nil)
+  puts "Usage: #{name} <query>"
+  if err
+    ecode ||= 1
+    puts "---\nERROR: #{err}"
+  else
+    ecode ||= 0
+  end
+end
+
+lines = nil
+if ARGV.size > 0
+  lines = [ARGV.join(' ')]
+else
+  lines = STDIN.read.split("\n")
+end
+
+puts lines
+
+if lines.size == 1
+  `open 'http://duckduckgo.com/?q=#{Shellwords.escape(lines[0])}'`
+end
+
