@@ -10,6 +10,7 @@ def die_with_usage(err=nil, ecode=nil)
   else
     ecode ||= 0
   end
+  exit ecode
 end
 
 lines = nil
