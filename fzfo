@@ -58,11 +58,11 @@ sub quickopen {
   elsif(which("open")) {
     # Ubuntu >= 22, OS-X, and others
     print "Opening with: open\n";
-    system("open $fpath");
+    system("open \"$fpath\"");
   }
   elsif(which("xdg-open")) {
     print "Opening with: xdg-open\n";
-    system("xdg-open '$fpath'");
+    system("xdg-open \"$fpath\"");
   }
   else {
     print "ERROR: No opening utility found\n";
