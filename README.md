@@ -70,7 +70,8 @@ on a particular database.
 
 **Use Case**: You're trying to do something to a postgres database and it's complaining that there are connections and therefore it won't do what you want it to do. You know that the connections you have are all managed, they'll reconnect as needed. Use this to disconnect all the active connections to some postgres database.
 
-It supports options like port because someone is bound to be running a postgres server on a non-standard port.
+It supports options like port because someone is bound to be running a postgres
+server on a non-standard port.
 
 ## pgsqlrestore
 
@@ -213,9 +214,114 @@ are reachable before executing the <command>.
 ```
 
 **Use Case**: Suppose you have set of services running in docker-compose or something similar, you want to make sure your database is service is up and reachable before your application. You can use this script to ensure that one or more host-ports are open before running some command.
-
-Example: you want to wait for Redis on port 6379 to be up on localhost before saying hello:
+Example, you want to wait for Redis on port 6379 to be up on localhost before saying hello:
 ```
 awaithostport localhost:6379 -- echo hello
+```
+
+## ssh-config-parse
+
+```
+Usage: ssh-config-parse [-c /path/to/ssh/conf]
+
+-h, --help
+  
+  Print this help message.
+
+-c, --config        
+
+  Path to SSH config file.
+  Defaults to $HOME/.ssh/config
+
+-m, --mode
+  
+  Set the mode. Defaults to 'praw'.
+  Valid modes are:
+
+    'praw'  -- Print output raw. 
+    'pjson' -- Print output as JSON.
+  
+  A mode is required. 
+
+-t, --tag
+  
+  ssh-config-parse allows extending the normal config file
+  with tags with a '#Tag' field. 
+
+  Example:
+  ```
+  Host server_nickname
+  HostName server_real_hostname
+  #Tag <whatever-tag-you-like>
+  ```
+
+  You can filter the output with these tag names
+  using this -t, --tag flag. 
+
+-f, --field
+  
+  Output only the selected field. 
+  In mode=praw,  
+    it will output one line per field. 
+  In mode=pjson, 
+    it will output the fields as a JSON array. 
+
+-j, --json
+  
+  Shorthand for mode=pjson, will 
+  output in JSON whenever possible.
+
+
+```
+
+This little script will parse your ssh config file and print out some subset of it. 
+It can take a handly '--json' flag to output in JSON.
+
+**Use Case**: Suppose you have too a number of Hosts in your ~/.ssh/config file. 
+You have attempted to assign nick sensibly in some reasonable manner, but even still
+you wish you could tag hosts and select them according to these tags. 
+You can add a virtual '#Tag' attribute, within a comment of course, after a Host 
+block. ssh-config-parse will parse these into a set.
+
+Example SSH config file:
+```
+Host droplet-1
+HostName 137.100.100.100
+#Tag digoc
+
+Host droplet-2
+HostName 137.100.100.101
+#Tag digoc
+
+Host somethingelse-1
+HostName 137.100.200.1
+```
+
+If you now want only the configs tagged with 'digoc' for 
+your Digital Ocean droplets, you can do:
+```
+$ ssh-config-parse -t digoc
+```
+
+Output:
+```
+Host droplet-1
+HostName 137.100.100.100
+#Tag digoc
+
+Host droplet-2
+HostName 137.100.100.101
+#Tag digoc
+```
+
+And if you only want the Host fields, you can do:
+```
+$ ssh-config-parse -t digoc -f Host
+```
+
+Output:
+```
+droplet-1
+droplet-2
 ```
 
