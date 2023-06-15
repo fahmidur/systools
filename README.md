@@ -249,11 +249,11 @@ Usage: ssh-config-parse [-c /path/to/ssh/conf]
   with tags with a '#Tag' field. 
 
   Example:
-  ```
+  ---
   Host server_nickname
   HostName server_real_hostname
   #Tag <whatever-tag-you-like>
-  ```
+  ---
 
   You can filter the output with these tag names
   using this -t, --tag flag. 

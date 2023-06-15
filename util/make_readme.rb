@@ -29,7 +29,9 @@ def usage_for(ipath)
   unless path
     raise "ERROR: cannot file #{ipath}"
   end
-  `#{path} --help`
+  out = `#{path} --help`
+  out.gsub!("```", '---')
+  return out
 end
 
 #--- main
