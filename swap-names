@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+
+require 'securerandom'
+require 'fileutils'
+
+def die(err=nil, ecode=nil)
+  name = File.basename($0)
+  puts <<~EOS
+    Usage: #{name} <path1> <path2>
+
+      -h, --help     Print this help message.
+
+  EOS
+  if err
+    puts "ERROR: #{err}"
+    ecode ||= 1
+  else
+    ecode ||= 0
+  end
+  exit ecode
+end
+
+#---
+
+path1 = ARGV[0]
+path2 = ARGV[1]
+
+if ARGV.size == 1 && ['-h', '--help'].member?(ARGV[0])
+  die()
+end
+
+if ARGV.size != 2
+  die("Invalid number of args")
+end
+
+unless path1 and path2
+  die("Expecting both path1 and path2")
+end
+
+unless File.exist?(path1) && File.exist?(path2)
+  die("Expecting both files to exist")
+end
+
+tmp_path = "/tmp/"+SecureRandom.uuid
+#puts "tmp_path=#{tmp_path}"
+
+FileUtils.mv(path1, tmp_path)
+FileUtils.mv(path2, path1)
+FileUtils.mv(tmp_path, path2)
+
+
