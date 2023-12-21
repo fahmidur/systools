@@ -1,5 +1,9 @@
 #!/usr/bin/env ruby
 
+##
+# Generates the README from the README template.
+##
+
 require 'erb'
 
 def die(err=nil, ecode=nil)
