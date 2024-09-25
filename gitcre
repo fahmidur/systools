@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+last_msg = `git log -n1 --format='%s'`.strip
+puts "last_msg=|#{last_msg}|"
+unless last_msg && last_msg !~ /^\s*$/
+  puts "ERROR: unable to get last commit subject"
+  exit 1
+end
+
+`git add .`
+`git commit -m "#{last_msg}"`
+
