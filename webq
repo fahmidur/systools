@@ -26,5 +26,9 @@ sline = lines.join(' ')
 sline.gsub!("\n", ' ')
 sline.gsub!(/\s+/, ' ')
 
-system("open 'http://duckduckgo.com/?q=#{Shellwords.escape(sline)}'")
+if sline.chomp =~ /^https?:\/\//
+  system("open #{Shellwords.escape(sline)}")
+else
+  system("open 'http://duckduckgo.com/?q=#{Shellwords.escape(sline)}'")
+end
 
