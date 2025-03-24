@@ -9,7 +9,7 @@ def die_with_usage(err=nil)
   puts "Usage: #{name} [dirpath]"
   ecode ||= 0
   if err
-    puts "ERROR: err"
+    puts "ERROR: #{err}"
     ecode = 1
   end
   exit ecode
