@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+
+require 'digest/sha2'
+
+$ignoredirs = ['.', '..']
+
+def die_with_usage(err=nil)
+  name = File.basename($0)
+  puts "Usage: #{name} [dirpath]"
+  ecode ||= 0
+  if err
+    puts "ERROR: #{err}"
+    ecode = 1
+  end
+  exit ecode
+end
+
+def digest_filepath(path)
+  sha = Digest::SHA2.new
+  File.open(path) do |f|
+    while chunk = f.read(256)
+      sha << chunk
+    end
+  end
+  return sha.hexdigest
+end
+
+def digest_path(path, visited={})
+  path = File.absolute_path(path)
+  if(visited[path]) 
+    return nil
+  end
+  visited[path] = true
+  if File.file?(path)
+    puts "F | #{path}"
+    return digest_filepath(path)
+  end
+  puts "D | #{path}"
+  pathlist = []
+  Dir.foreach(path) do |name|
+    next if $ignoredirs.member?(name)
+    subpath = File.join(path, name)
+    pathlist << subpath
+  end
+  pathlist.sort!
+  hashlist = pathlist.map do |path|
+    digest_path(path, visited)
+  end
+  hashlist.compact!
+  sha = Digest::SHA2.new
+  hashlist.each do |h|
+    sha << h
+  end
+  return sha.hexdigest
+end
+
+#--- main
+
+dirpath = ARGV[0] || "."
+unless dirpath
+  die_with_usage()
+end
+dirpath = File.absolute_path(dirpath)
+unless Dir.exist?(dirpath)
+  die_with_usage("no such dir at: #{dirpath}")
+end
+
+puts digest_path(dirpath)
+
