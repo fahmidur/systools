@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby 
+
+while(line=gets)
+  puts line.split(/\s+/).map {|x| x.capitalize }.join(' ')
+end
