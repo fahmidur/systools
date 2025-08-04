@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+require 'uri'
+def abbrev(link)
+  uri = URI(link)
+  host = uri.host
+  hostparts = host.split('.')
+  nhost = nil
+  if hostparts.size >= 2
+    nhost = hostparts[-2]
+  else
+    nhost = hostparts[-1]
+  end
+  return "link:#{nhost}"
+end
+
+while(line=gets)
+  line = line.gsub(/^\s*https?:\/\/\S+/) do |x|
+    "[#{abbrev(x)}](#{x})"
+  end
+  line = line.gsub(/([\S+])(\s+)(https?:\/\/\S+)/) do |x|
+    preword = $1
+    spacing = $2
+    link = $3
+    "#{preword}#{spacing}[#{abbrev(link)}](#{link})"
+  end
+  puts line
+end
